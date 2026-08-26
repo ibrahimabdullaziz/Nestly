@@ -12,7 +12,7 @@ enum Role {
   GUEST
 }
 
-enum Booking {
+enum BookingStatus {
   PENDING
   CONFIRMED
   CANCELLED
@@ -31,9 +31,9 @@ model User {
   createAt DateTime @default(now())
   updatedAt DateTime @default(now())
   units Unit[]
-  // bookings
-  // reviews
-  // favorites
+  bookings Booking[]
+  reviews UnitReview[]
+  favorites UnitFavorite[]
 }
 
 model Country {
@@ -82,10 +82,10 @@ model Unit {
    categoryId String
    category UnitCategory @relation(fields:[categoryId],references: [id])
    photos       UnitPhoto[]
-  // bookings     Booking[]
-  // reviews      UnitReview[]
-  // favorites    UnitFavorite[]
-  // createdAt    DateTime     @default(now())
+  bookings     Booking[]
+  reviews      UnitReview[]
+  favorites    UnitFavorite[]
+  createdAt    DateTime     @default(now())
 
   @@index([cityId,isActive])
   @@index([ownerId])
@@ -100,3 +100,52 @@ model UnitPhoto{
     createdAt DateTime @default(now())
 }
 
+model Booking {
+  id String @id @default(uuid())
+  unitId String
+  unit Unit @relation(fields: [unitId],references: [id])
+  guestId String
+  guest User @relation(fields: [guestId],references: [id])
+  checkIn DateTime
+  checkOut DateTime
+  totalPrice Decimal
+  status BookingStatus @default(PENDING)
+  createdAt  DateTime @default(now())
+
+  @@index([unitId,checkIn,checkOut])
+}
+
+model UnitReview {
+  id        String   @id @default(uuid())
+  unitId    String
+  unit      Unit     @relation(fields: [unitId], references: [id])
+  guestId   String
+  guest     User     @relation(fields: [guestId], references: [id])
+  rating    Int      // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+
+  @@unique([unitId, guestId]) // one review per guest per unit
+}
+
+model UnitFavorite {
+  id     String @id @default(uuid())
+  unitId String
+  unit   Unit   @relation(fields: [unitId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([unitId, userId])
+}
+
+model Otp{
+    id     String @id @default(uuid())
+    email String @unique
+    code String
+    purpose String
+    expiresAt DateTime
+    usedAt DateTime?
+    CreatedAt DateTime @default(now())
+
+    @@index([email,purpose])
+}
