@@ -1,5 +1,9 @@
-import PrismaClient = require("@prisma/client");
+import { PrismaClient } from "@prisma/client";
+import config from "../config/env";
+import { PrismaPg } from "@prisma/adapter-pg";
 
-const prisma = new PrismaClient();
+const prismaAdapter = new PrismaPg({ connectionString: config.databaseUrl });
 
-module.exports = prisma;
+const prisma = new PrismaClient({ adapter: prismaAdapter });
+
+export default prisma;

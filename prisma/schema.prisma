@@ -1,8 +1,102 @@
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
   provider = "prisma-client-js"
 }
+
+enum Role {
+  ADMIN
+  HOST
+  GUEST
+}
+
+enum Booking {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  REJECTED
+}
+
+model User {
+  id String @id @default(uuid())
+  email String @unique
+  password String
+  firstName String
+  lastName String
+  role Role @default(GUEST)
+  isVerified Boolean @default(false)
+  createAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  units Unit[]
+  // bookings
+  // reviews
+  // favorites
+}
+
+model Country {
+  id String @id @default(uuid())
+  name String @unique
+  code String @unique
+  cities City[]
+}
+
+model Currency {
+  id String @id @default(uuid())
+  code String @unique
+  symbol String
+  units Unit[]
+}
+
+model City {
+  id String @id @default(uuid())
+  name String
+  countryId String
+  country Country @relation(fields: [countryId] ,references: [id])
+  units Unit[]
+  @@unique([name,countryId])
+}
+
+model UnitCategory {
+  id String @id @default(uuid())
+  name String @unique
+  units Unit[]
+}
+
+model Unit {
+   id String @id @default(uuid())
+   title String
+   description String
+   pricePerNight Int
+   maxGuests Int
+   isActive Boolean @default(false)
+   deletedAt DateTime @default(now())
+   ownerId String
+   owner User @relation(fields: [ownerId],references: [id])
+   cityId String
+   city City @relation(fields: [cityId],references: [id])
+   currencyId String
+   currency Currency @relation(fields: [currencyId],references: [id])
+   categoryId String
+   category UnitCategory @relation(fields:[categoryId],references: [id])
+   photos       UnitPhoto[]
+  // bookings     Booking[]
+  // reviews      UnitReview[]
+  // favorites    UnitFavorite[]
+  // createdAt    DateTime     @default(now())
+
+  @@index([cityId,isActive])
+  @@index([ownerId])
+}
+
+model UnitPhoto{
+    id String @id @default(uuid())
+    unitId String
+    unit Unit @relation(fields: [unitId],references: [id])
+    url String
+    publicId String
+    createdAt DateTime @default(now())
+}
+
