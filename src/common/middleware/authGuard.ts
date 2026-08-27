@@ -17,7 +17,10 @@ export const authGuard = (req: Request, res: Response, next: NextFunction) => {
 
   try {
     const payload = verifyAccessToken(token);
-    req.user = { id: payload.id, role: payload.role };
+    req.user = {
+      id: payload.id,
+      role: payload.role as NonNullable<typeof req.user>["role"],
+    };
   } catch (err) {
     console.log(err);
     throw new ApiError(401, "Access Denied: No Token Provided");
