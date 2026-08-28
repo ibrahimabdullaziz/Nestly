@@ -9,6 +9,8 @@ interface AppConfig {
   databaseUrl: string;
   jwtAccessSecret: string;
   jwtRefreshSecret: string;
+  adminEmail: string;
+  adminPassword: string;
 }
 
 const config: AppConfig = {
@@ -16,6 +18,8 @@ const config: AppConfig = {
   databaseUrl: process.env.DATABASE_URL as string,
   jwtAccessSecret: process.env.JWT_ACCESS_SECRET as string,
   jwtRefreshSecret: process.env.JWT_REFRESH_SECRET as string,
+  adminEmail: process.env.SYSTEM_ADMIN_EMAIL as string,
+  adminPassword: process.env.SYSTEM_ADMIN_PASSWORD as string,
 };
 
 export default config;

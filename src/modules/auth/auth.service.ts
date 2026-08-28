@@ -46,6 +46,9 @@ export async function refreshService(refreshToken: string) {
     throw new ApiError(403, "Unotherized, failed in verifing the credentials");
   }
 
-  const token = await signAccessToken(refreshedToken);
+  const token = signAccessToken({
+    id: refreshedToken.id,
+    role: refreshedToken.role,
+  });
   return token;
 }
