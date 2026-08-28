@@ -1,12 +1,12 @@
 import z from "zod";
 
-const loginSchema = z.object({
+export const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string().length(8),
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
-const registerSchema = z.object({
+export const registerSchema = z.object({
   email: z.string().email(),
-  password: z.string().length(8),
+  password: z.string().min(8, "Password must be at least 8 characters"),
   firstName: z.string().nonempty(),
   lastName: z.string().nonempty(),
 });

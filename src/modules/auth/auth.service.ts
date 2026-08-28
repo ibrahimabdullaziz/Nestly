@@ -8,19 +8,19 @@ import {
 import { createUser, findByEmail } from "../users/users.service";
 import { RegisterDto } from "./auth.validation";
 
-export async function register(data: RegisterDto) {
+export async function registerService(data: RegisterDto) {
   const user = await createUser(data);
   if (!user) {
     throw new ApiError(500, "Server Error While Creation Operation");
   }
 
-  const signToken = signAccessToken({ id: user.id, role: user.role });
-  const accessToken = signRefreshToken({ id: user.id, role: user.role });
+  const accessToken = signAccessToken({ id: user.id, role: user.role });
+  const refreshToken = signRefreshToken({ id: user.id, role: user.role });
 
-  return { signToken, accessToken };
+  return { accessToken, refreshToken, user };
 }
 
-export async function login(email: string, password: string) {
+export async function loginService(email: string, password: string) {
   const user = await findByEmail(email);
 
   if (!user) {
@@ -32,9 +32,14 @@ export async function login(email: string, password: string) {
   if (!rowPassword) {
     throw new ApiError(401, "Invalid credentials");
   }
+
+  const accessToken = signAccessToken({ id: user.id, role: user.role });
+  const refreshToken = signRefreshToken({ id: user.id, role: user.role });
+
+  return { accessToken, refreshToken, user };
 }
 
-export async function refresh(refreshToken: string) {
+export async function refreshService(refreshToken: string) {
   const refreshedToken = await verifyRefreshToken(refreshToken);
 
   if (!refreshedToken) {
