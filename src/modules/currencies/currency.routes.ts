@@ -6,10 +6,10 @@ import { authGuard } from "../../common/middleware/authGuard";
 import { createCurrency, getAllCurrencies } from "./currency.controller";
 import { currencySchema } from "./currency.validation";
 
-const countriesRouter = express.Router();
+const currenciesRouter = express.Router();
 
-countriesRouter.get("/", getAllCurrencies);
-countriesRouter.post(
+currenciesRouter.get("/", getAllCurrencies);
+currenciesRouter.post(
   "/",
   validate(currencySchema),
   authGuard,
@@ -17,4 +17,4 @@ countriesRouter.post(
   createCurrency,
 );
 
-export default countriesRouter;
+export default currenciesRouter;
