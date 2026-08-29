@@ -2,12 +2,14 @@ import express = require("express");
 import morgan = require("morgan");
 import authRoutes from "./modules/auth/auth.routes";
 import errorHandler from "./common/middleware/errorHandler";
+import countriesRouter from "./modules/countries/countries.routes";
 
 const app = express();
 
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/countries", countriesRouter);
 
 app.use(morgan("dev"));
 
