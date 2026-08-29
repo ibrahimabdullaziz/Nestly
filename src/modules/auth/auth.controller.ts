@@ -7,7 +7,9 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 
   const data = await registerService({ email, password, firstName, lastName });
 
-  return res.status(201).json({ status: 201, message: "User created successfully", data });
+  return res
+    .status(201)
+    .json({ status: 201, message: "User created successfully", data });
 });
 
 export const login = asyncHandler(async (req: Request, res: Response) => {
@@ -15,7 +17,9 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
   const data = await loginService(email, password);
 
-  return res.status(200).json({ status: 200, message: "User logged successfully", data });
+  return res
+    .status(200)
+    .json({ status: 200, message: "User logged successfully", data });
 });
 
 export const refresh = asyncHandler(async (req: Request, res: Response) => {
@@ -23,10 +27,18 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
 
   const accessToken = await refreshService(token);
 
-  return res.status(200).json({ status: 200, message: "Token refreshed successfully", accessToken });
+  return res
+    .status(200)
+    .json({
+      status: 200,
+      message: "Token refreshed successfully",
+      accessToken,
+    });
 });
 
 export const getMe = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
-  return res.status(200).json({ status: 200, message: "User retrieved successfully", data: user });
+  return res
+    .status(200)
+    .json({ status: 200, message: "User retrieved successfully", data: user });
 });

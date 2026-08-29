@@ -14,11 +14,10 @@ export const getAllCountriesService = async () => {
 };
 
 export const createCountryService = async (data: CountryDto) => {
-  const { cities, ...countryData } = data;
+  const { ...countryData } = data;
   const country = await prisma.country.create({
     data: {
       ...countryData,
-      cities: { create: cities.map((city) => ({ name: city })) || [] },
     },
   });
 
