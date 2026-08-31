@@ -72,7 +72,7 @@ model Unit {
    pricePerNight Int
    maxGuests Int
    isActive Boolean @default(false)
-   deletedAt DateTime @default(now())
+   deletedAt DateTime? 
    ownerId String
    owner User @relation(fields: [ownerId],references: [id])
    cityId String
