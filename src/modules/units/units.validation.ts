@@ -13,3 +13,15 @@ export const unitsSchema = z.object({
 });
 
 export type unitsDto = z.infer<typeof unitsSchema>;
+export type updateUnitsDto = Partial<unitsDto>;
+
+export const listUnitsQuerySchema = z.object({
+  cityId: z.uuid().optional(),
+  categoryId: z.uuid().optional(),
+  minPrice: z.coerce.number().nonnegative().optional(),
+  maxPrice: z.coerce.number().nonnegative().optional(),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(50).default(20),
+});
+
+export type listUnitsQueryDto = z.infer<typeof listUnitsQuerySchema>;
