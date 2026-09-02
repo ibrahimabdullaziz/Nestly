@@ -13,7 +13,7 @@ export async function createUnitService(ownerId: string, data: unitsDto) {
 
 export async function updateUnitService(
   unitId: string,
-  ownerId: string,
+  ownerId: string,  
   data: updateUnitsDto,
 ) {
   const unit = await prisma.unit.findUnique({ where: { id: unitId } });

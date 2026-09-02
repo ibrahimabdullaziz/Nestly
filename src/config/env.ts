@@ -11,6 +11,9 @@ interface AppConfig {
   jwtRefreshSecret: string;
   adminEmail: string;
   adminPassword: string;
+  cloudinaryName: string;
+  cloudinaryApiKey: string;
+  cloudinaryApiSecret: string;
 }
 
 const config: AppConfig = {
@@ -20,6 +23,9 @@ const config: AppConfig = {
   jwtRefreshSecret: process.env.JWT_REFRESH_SECRET as string,
   adminEmail: process.env.SYSTEM_ADMIN_EMAIL as string,
   adminPassword: process.env.SYSTEM_ADMIN_PASSWORD as string,
+  cloudinaryName: process.env.CLOUDINARY_CLOUD_NAME as string,
+  cloudinaryApiKey: process.env.CLOUDINARY_API_SECRET as string,
+  cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET as string,
 };
 
 export default config;
