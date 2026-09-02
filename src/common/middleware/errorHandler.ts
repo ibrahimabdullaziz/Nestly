@@ -1,4 +1,5 @@
-import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
+import { Request, Response, NextFunction } from "express";
+import { MulterError } from "multer";
 import ApiError from "../utils/ApiError";
 
 function errorHandler(
@@ -12,6 +13,12 @@ function errorHandler(
   if (err instanceof ApiError) {
     statusCode = err.statusCode;
     message = err.message;
+  } else if (err instanceof MulterError) {
+    statusCode = 400;
+    message =
+      err.code === "LIMIT_FILE_SIZE"
+        ? "File too large. Max size is 5MB"
+        : err.message;
   }
 
   return res.status(statusCode).json({ success: false, message });

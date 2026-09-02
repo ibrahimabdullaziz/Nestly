@@ -1,9 +1,35 @@
-import { v2 as cloudinary } from "cloudinary";
 import type { UploadApiErrorResponse, UploadApiResponse } from "cloudinary";
 import ApiError from "../../common/utils/ApiError";
+import cloudinary from "../../config/cloudinary";
 import prisma from "../../db/prisma";
 
-export async function uploadUnitPhoto(
+function uploadBuffer(buffer: Buffer) {
+  return new Promise<{ secure_url: string; public_id: string }>(
+    (resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: "nestly/units",
+        },
+        (
+          error: UploadApiErrorResponse | undefined,
+          result: UploadApiResponse | undefined,
+        ) => {
+          if (error) return reject(error);
+          if (!result) {
+            return reject(new Error("Cloudinary upload returned no result"));
+          }
+          resolve({
+            secure_url: result.secure_url,
+            public_id: result.public_id,
+          });
+        },
+      );
+      stream.end(buffer);
+    },
+  );
+}
+
+export async function uploadUnitPhotoService(
   unitId: string,
   ownerId: string,
   fileBuffer: Buffer,
@@ -15,48 +41,39 @@ export async function uploadUnitPhoto(
   }
 
   if (unit.ownerId !== ownerId) {
-    throw new ApiError(403, "You not authorized to edit this unit");
+    throw new ApiError(403, "Not your unit");
   }
 
-  const uploadBuffer = (buffer: Buffer) => {
-    return new Promise<{ secure_url: string; public_id: string }>(
-      (resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          {
-            folder: "nestly/units",
-          },
-          (
-            error: UploadApiErrorResponse | undefined,
-            result: UploadApiResponse | undefined,
-          ) => {
-            if (error) return reject(error);
-            if (!result)
-              return reject(new Error("Cloudinary upload returned no result"));
-            resolve({
-              secure_url: result.secure_url,
-              public_id: result.public_id,
-            });
-          },
-        );
-        stream.end(buffer);
-      },
-    );
-  };
+  const data = await uploadBuffer(fileBuffer);
+  const url = data.secure_url;
+  const publicId = data.public_id;
 
   try {
-    const data = await uploadBuffer(fileBuffer);
-
-    const url = data.secure_url;
-    const publicId = data.public_id;
-
-    const unitPhoto = await prisma.unitPhoto.create({
+    return await prisma.unitPhoto.create({
       data: { url, publicId, unitId },
     });
-
-    if (!unitPhoto) {
-      await cloudinary.uploader.destroy(publicId);
-    }
-  } catch (err: unknown) {
-    throw err instanceof Error ? err : new Error(String(err));
+  } catch (err) {
+    await cloudinary.uploader.destroy(publicId);
+    throw err;
   }
+}
+
+export async function deleteUnitPhotoService(photoId: string, ownerId: string) {
+  const photo = await prisma.unitPhoto.findUnique({
+    where: { id: photoId },
+    include: { unit: true },
+  });
+
+  if (!photo) {
+    throw new ApiError(404, "This photo is not found");
+  }
+
+  if (photo.unit.ownerId !== ownerId) {
+    throw new ApiError(403, "Not your unit");
+  }
+
+  await cloudinary.uploader.destroy(photo.publicId);
+  await prisma.unitPhoto.delete({
+    where: { id: photo.id },
+  });
 }
