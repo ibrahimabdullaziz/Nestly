@@ -5,10 +5,13 @@ import { roleGuard } from "../../common/middleware/roleGuard";
 import { authGuard } from "../../common/middleware/authGuard";
 import { unitsSchema } from "./units.validation";
 import {
+  activateUnit,
   createUnit,
+  deactivateUnit,
   getUnitById,
   listMyUnits,
   listUnits,
+  softDeleteUnit,
   updateUnit,
 } from "./units.controller";
 
@@ -31,9 +34,15 @@ unitsRoutes.patch(
 );
 
 unitsRoutes.get("/", listUnits);
-
 unitsRoutes.get("/mine", authGuard, roleGuard("HOST"), listMyUnits);
-
 unitsRoutes.get("/:id", getUnitById);
+unitsRoutes.patch("/:id/activate", authGuard, roleGuard("HOST"), activateUnit);
+unitsRoutes.patch(
+  "/:id/deactivate",
+  authGuard,
+  roleGuard("HOST"),
+  deactivateUnit,
+);
+unitsRoutes.delete("/:id", authGuard, roleGuard("HOST"), softDeleteUnit);
 
 export default unitsRoutes;

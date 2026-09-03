@@ -1,6 +1,12 @@
 import "dotenv/config";
 
-if (!process.env.DATABASE_URL || !process.env.JWT_ACCESS_SECRET) {
+if (
+  !process.env.DATABASE_URL ||
+  !process.env.JWT_ACCESS_SECRET ||
+  !process.env.CLOUDINARY_CLOUD_NAME ||
+  !process.env.CLOUDINARY_API_KEY ||
+  !process.env.CLOUDINARY_API_SECRET
+) {
   throw new Error("Missing Some Environment Variables. Check Your .env file");
 }
 
@@ -24,7 +30,7 @@ const config: AppConfig = {
   adminEmail: process.env.SYSTEM_ADMIN_EMAIL as string,
   adminPassword: process.env.SYSTEM_ADMIN_PASSWORD as string,
   cloudinaryName: process.env.CLOUDINARY_CLOUD_NAME as string,
-  cloudinaryApiKey: process.env.CLOUDINARY_API_SECRET as string,
+  cloudinaryApiKey: process.env.CLOUDINARY_API_KEY as string,
   cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET as string,
 };
 

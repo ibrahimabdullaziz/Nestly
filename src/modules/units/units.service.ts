@@ -1,7 +1,23 @@
 import { Prisma } from "@prisma/client";
 import ApiError from "../../common/utils/ApiError";
 import prisma from "../../db/prisma";
-import { listUnitsQueryDto, updateUnitsDto, unitsDto } from "./units.validation";
+import {
+  listUnitsQueryDto,
+  updateUnitsDto,
+  unitsDto,
+} from "./units.validation";
+
+const verifyUnit = async (unitId: string, ownerId: string) => {
+  const unit = await prisma.unit.findUnique({ where: { id: unitId } });
+
+  if (!unit) {
+    throw new ApiError(404, "This unit is not found");
+  }
+
+  if (unit.ownerId !== ownerId) {
+    throw new ApiError(403, "Not your unit");
+  }
+};
 
 export async function createUnitService(ownerId: string, data: unitsDto) {
   const unit = await prisma.unit.create({
@@ -13,7 +29,7 @@ export async function createUnitService(ownerId: string, data: unitsDto) {
 
 export async function updateUnitService(
   unitId: string,
-  ownerId: string,  
+  ownerId: string,
   data: updateUnitsDto,
 ) {
   const unit = await prisma.unit.findUnique({ where: { id: unitId } });
@@ -91,4 +107,43 @@ export async function listMyUnitsService(ownerId: string) {
   });
 
   return units;
+}
+
+export async function deactivateUnitService(unitId: string, ownerId: string) {
+  await verifyUnit(unitId, ownerId);
+  const unit = await prisma.unit.update({
+    where: { id: unitId },
+    data: { isActive: false },
+  });
+
+  if (!unit) {
+    throw new ApiError(500, "server error!");
+  }
+  return unit;
+}
+
+export async function activateUnitService(unitId: string, ownerId: string) {
+  await verifyUnit(unitId, ownerId);
+  const unit = await prisma.unit.update({
+    where: { id: unitId },
+    data: { isActive: true },
+  });
+
+  if (!unit) {
+    throw new ApiError(500, "server error!");
+  }
+  return unit;
+}
+
+export async function softDeleteUnitService(unitId: string, ownerId: string) {
+  await verifyUnit(unitId, ownerId);
+  const unit = await prisma.unit.update({
+    where: { id: unitId },
+    data: { deletedAt: new Date() },
+  });
+
+  if (!unit) {
+    throw new ApiError(500, "server error!");
+  }
+  return unit;
 }

@@ -2,13 +2,31 @@ import { Request, Response, NextFunction } from "express";
 import asyncHandler from "../../common/utils/asyncHandler";
 import ApiError from "../../common/utils/ApiError";
 import {
+  activateUnitService,
   createUnitService,
+  deactivateUnitService,
   getUnitByIdService,
   listMyUnitsService,
   listUnitsService,
+  softDeleteUnitService,
   updateUnitService,
 } from "./units.service";
 import { listUnitsQuerySchema } from "./units.validation";
+
+const typesChecking = (req: Request) => {
+  const userId = req.user?.id;
+  const unitId = req.params?.id;
+
+  if (!userId) {
+    throw new ApiError(401, "User ID is required");
+  }
+
+  if (!unitId || Array.isArray(unitId)) {
+    throw new ApiError(400, "unit is missing");
+  }
+
+  return { userId, unitId };
+};
 
 export const createUnit = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -98,6 +116,48 @@ export const listMyUnits = asyncHandler(
       status: 200,
       message: "units listed successfully",
       data: listedUnits,
+    });
+  },
+);
+
+export const activateUnit = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { unitId, userId } = typesChecking(req);
+
+    const unit = await activateUnitService(unitId, userId);
+
+    return res.status(200).json({
+      status: 200,
+      message: "unit updated successfully",
+      data: unit,
+    });
+  },
+);
+
+export const softDeleteUnit = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { unitId, userId } = typesChecking(req);
+
+    const unit = await softDeleteUnitService(unitId, userId);
+
+    return res.status(200).json({
+      status: 200,
+      message: "unit updated successfully",
+      data: unit,
+    });
+  },
+);
+
+export const deactivateUnit = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { unitId, userId } = typesChecking(req);
+
+    const unit = await deactivateUnitService(unitId, userId);
+
+    return res.status(200).json({
+      status: 200,
+      message: "unit updated successfully",
+      data: unit,
     });
   },
 );
