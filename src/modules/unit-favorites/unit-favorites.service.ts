@@ -6,7 +6,7 @@ export async function addFavoriteService(userId: string, unitId: string) {
     data: { userId, unitId },
   });
 
-  if (favoriteItem) {
+  if (!favoriteItem) {
     throw new ApiError(500, "Error in adding this unit to favorites");
   }
 
@@ -20,7 +20,7 @@ export async function removeFavoriteService(userId: string, unitId: string) {
     },
   });
 
-  if (deletedItem) {
+  if (!deletedItem) {
     throw new ApiError(500, "Error in removing this unit from favorites");
   }
 

@@ -5,7 +5,9 @@ if (
   !process.env.JWT_ACCESS_SECRET ||
   !process.env.CLOUDINARY_CLOUD_NAME ||
   !process.env.CLOUDINARY_API_KEY ||
-  !process.env.CLOUDINARY_API_SECRET
+  !process.env.CLOUDINARY_API_SECRET ||
+  !process.env.MAIL_USER ||
+  !process.env.MAIL_PASS
 ) {
   throw new Error("Missing Some Environment Variables. Check Your .env file");
 }
@@ -20,6 +22,8 @@ interface AppConfig {
   cloudinaryName: string;
   cloudinaryApiKey: string;
   cloudinaryApiSecret: string;
+  mailUser: string;
+  mailPass: string;
 }
 
 const config: AppConfig = {
@@ -32,6 +36,8 @@ const config: AppConfig = {
   cloudinaryName: process.env.CLOUDINARY_CLOUD_NAME as string,
   cloudinaryApiKey: process.env.CLOUDINARY_API_KEY as string,
   cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET as string,
+  mailUser: process.env.MAIL_USER as string,
+  mailPass: process.env.MAIL_PASS as string,
 };
 
 export default config;

@@ -25,10 +25,6 @@ export const addFavorite = asyncHandler(
     const unitId = extractUnitId(req);
     const favorite = await addFavoriteService(guestId, unitId);
 
-    if (!favorite) {
-      throw new ApiError(500, "Server Error while creation process");
-    }
-
     res.status(200).json({
       status: 201,
       message: "favorite created successfully",
@@ -43,10 +39,6 @@ export const removeFavorite = asyncHandler(
     const unitId = extractUnitId(req);
     const favorite = await removeFavoriteService(guestId, unitId);
 
-    if (!favorite) {
-      throw new ApiError(500, "Server Error while removing process");
-    }
-
     res.status(200).json({
       status: 200,
       message: "favorite removed successfully",
@@ -60,10 +52,6 @@ export const listFavorites = asyncHandler(
     const guestId = extractUserId(req);
 
     const favorites = await listFavoritesService(guestId);
-
-    if (!favorites) {
-      throw new ApiError(500, "Server Error while listing process");
-    }
 
     res.status(200).json({
       status: 200,
