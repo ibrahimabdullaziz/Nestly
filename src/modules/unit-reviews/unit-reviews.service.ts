@@ -1,7 +1,7 @@
 import ApiError from "../../common/utils/ApiError";
 import prisma from "../../db/prisma";
 
-export async function createReview(
+export async function createReviewService(
   guestId: string,
   unitId: string,
   rating: number,
@@ -35,7 +35,7 @@ export async function createReview(
   return review;
 }
 
-export async function getUnitReviews(unitId: string) {
+export async function getUnitReviewsService(unitId: string) {
   const reviews = await prisma.unitReview.findMany({
     where: { unitId: unitId },
     include: { unit: true },
