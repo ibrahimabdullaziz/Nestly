@@ -5,10 +5,9 @@ import { createReview, getUnitReviews } from "./unit-reviews.controller";
 
 const router = express.Router;
 
-const unitReviewsRoutes = router();
+const unitReviewsRoutes = express.Router({ mergeParams: true });
 
 unitReviewsRoutes.get("/", getUnitReviews);
 unitReviewsRoutes.post("/", authGuard, roleGuard("GUEST"), createReview);
 
-express.Router({ mergeParams: true });
 export default unitReviewsRoutes;

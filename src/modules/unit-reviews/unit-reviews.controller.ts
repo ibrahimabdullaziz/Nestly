@@ -35,7 +35,7 @@ export const createReview = asyncHandler(
 
     res.status(200).json({
       status: 200,
-      message: "booking canceled successfully",
+      message: "review created successfully",
       data: review,
     });
   },
