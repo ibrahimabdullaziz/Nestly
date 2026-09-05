@@ -1,7 +1,7 @@
 import ApiError from "../../common/utils/ApiError";
 import prisma from "../../db/prisma";
 
-export async function addFavorite(userId: string, unitId: string) {
+export async function addFavoriteService(userId: string, unitId: string) {
   const favoriteItem = await prisma.unitFavorite.create({
     data: { userId, unitId },
   });
@@ -13,7 +13,7 @@ export async function addFavorite(userId: string, unitId: string) {
   return favoriteItem;
 }
 
-export async function removeFavorite(userId: string, unitId: string) {
+export async function removeFavoriteService(userId: string, unitId: string) {
   const deletedItem = await prisma.unitFavorite.delete({
     where: {
       unitId_userId: { unitId, userId },
@@ -25,4 +25,13 @@ export async function removeFavorite(userId: string, unitId: string) {
   }
 
   return deletedItem;
+}
+
+export async function listFavoritesService(userId: string) {
+  const units = await prisma.unitFavorite.findMany({
+    where: { userId: userId },
+    include: { unit: true },
+  });
+
+  return units;
 }

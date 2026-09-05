@@ -10,6 +10,10 @@ import unitsRoutes from "./modules/units/units.route";
 import photoUnitsRoutes from "./modules/unit-photos/unit-photos.routes";
 import bookingRoutes from "./modules/bookings/bookings.routes";
 import unitReviewsRoutes from "./modules/unit-reviews/unit-reviews.routes";
+import {
+  unitFavoriteGetRoutes,
+  unitFavoriteRoutes,
+} from "./modules/unit-favorites/unit-favorites.routes";
 
 const app = express();
 
@@ -25,6 +29,8 @@ app.use("/api/units", photoUnitsRoutes);
 app.use("/api/units", unitsRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/units/:unitId/reviews", unitReviewsRoutes);
+app.use("/api/units/:unitId/favorite", unitFavoriteRoutes);
+app.use("/api/favorites", unitFavoriteGetRoutes);
 
 app.get("/", (req, res) => {
   res.send("Server is running");
