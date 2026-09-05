@@ -25,7 +25,7 @@ export async function generateOtp(email: string, purpose: string) {
   if (!otp) {
     throw new ApiError(500, "Server Error");
   }
-  return otp;
+  return otp.code;
 }
 
 export async function verifyOtp(email: string, code: string, purpose: string) {

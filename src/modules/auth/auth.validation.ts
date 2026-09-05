@@ -11,5 +11,11 @@ export const registerSchema = z.object({
   lastName: z.string().nonempty(),
 });
 
+export const verifyEmailSchema = z.object({
+  email: z.string().email(),
+  code: z.string().length(6),
+});
+
 export type RegisterDto = z.infer<typeof registerSchema>;
 export type LoginDto = z.infer<typeof loginSchema>;
+export type EmailDto = z.infer<typeof verifyEmailSchema>;
