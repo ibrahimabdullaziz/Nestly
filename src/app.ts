@@ -8,6 +8,7 @@ import currenciesRouter from "./modules/currencies/currency.routes";
 import categoriesRouter from "./modules/categories/category.routes";
 import unitsRoutes from "./modules/units/units.route";
 import photoUnitsRoutes from "./modules/unit-photos/unit-photos.routes";
+import bookingRoutes from "./modules/bookings/bookings.routes";
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use("/api/currencies", currenciesRouter);
 app.use("/api/unit-categories", categoriesRouter);
 app.use("/api/units", photoUnitsRoutes);
 app.use("/api/units", unitsRoutes);
+app.use("/api/bookings", bookingRoutes);
 
 app.get("/", (req, res) => {
   res.send("Server is running");
