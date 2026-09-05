@@ -19,7 +19,7 @@ export async function registerService(data: RegisterDto) {
 
   const accessToken = signAccessToken({ id: user.id, role: user.role });
   const refreshToken = signRefreshToken({ id: user.id, role: user.role });
-  const otp = generateOtp(user.email, "VERIFY_EMAIL");
+  const otp = await generateOtp(user.email, "VERIFY_EMAIL");
 
   const html = `
  <div style="font-family: sans-serif; max-width: 400px; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
@@ -69,10 +69,58 @@ export async function refreshService(refreshToken: string) {
 }
 
 export async function verifyEmailService(email: string, code: string) {
-  verifyOtp(email, code, "VERIFY_EMAIL");
+  await verifyOtp(email, code, "VERIFY_EMAIL");
 
   const user = await prisma.user.update({
     where: { email: email },
     data: { isVerified: true },
   });
+
+  return user;
+}
+
+export async function forgotPasswordService(email: string) {
+  const user = await prisma.user.findFirst({
+    where: { email: email },
+  });
+
+  if (!user) {
+    throw new ApiError(404, "user not found");
+  }
+
+  const otpCode = await generateOtp(email, "RESET_PASSWORD");
+
+  const html = `
+ <div style="font-family: sans-serif; max-width: 400px; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+  <h2 style="color: #333;">Nestly</h2>
+  <p style="color: #555;">Your email verification code is:</p>
+  <h1 style="color: #4F46E5; letter-spacing: 5px;">${otpCode}</h1>
+  <p style="color: #999; font-size: 12px;">This code expires in 10 minutes.</p>
+ </div>
+  `;
+
+  sendMail({ to: user.email, subject: "Reset Password", html: html });
+}
+
+export async function resetPasswordService(
+  email: string,
+  code: string,
+  newPassword: string,
+) {
+  await verifyOtp(email, code, "RESET_PASSWORD");
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  const updatedUser = await prisma.user.update({
+    where: { email },
+    data: { password: hashedPassword },
+  });
+
+  if (!updatedUser) {
+    throw new ApiError(500, "Failed on updated user password!");
+  }
+
+  // TODO: Invalidate existing refresh tokens (known simplification)
+
+  return updatedUser;
 }

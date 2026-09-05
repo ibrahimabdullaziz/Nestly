@@ -16,6 +16,18 @@ export const verifyEmailSchema = z.object({
   code: z.string().length(6),
 });
 
+export const forgetPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+export const resetPasswordSchema = z.object({
+  email: z.string().email(),
+  code: z.string().length(6),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
 export type RegisterDto = z.infer<typeof registerSchema>;
 export type LoginDto = z.infer<typeof loginSchema>;
-export type EmailDto = z.infer<typeof verifyEmailSchema>;
+export type VerifyEmailDto = z.infer<typeof verifyEmailSchema>;
+export type ForgetPasswordDto = z.infer<typeof forgetPasswordSchema>;
+export type ResetPasswordEmailDto = z.infer<typeof resetPasswordSchema>;

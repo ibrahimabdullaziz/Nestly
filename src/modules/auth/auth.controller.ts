@@ -1,6 +1,13 @@
 import { Request, Response } from "express";
 import asyncHandler from "../../common/utils/asyncHandler";
-import { loginService, registerService, refreshService } from "./auth.service";
+import {
+  loginService,
+  registerService,
+  refreshService,
+  verifyEmailService,
+  forgotPasswordService,
+  resetPasswordService,
+} from "./auth.service";
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const { email, password, firstName, lastName } = req.body;
@@ -27,13 +34,11 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
 
   const accessToken = await refreshService(token);
 
-  return res
-    .status(200)
-    .json({
-      status: 200,
-      message: "Token refreshed successfully",
-      accessToken,
-    });
+  return res.status(200).json({
+    status: 200,
+    message: "Token refreshed successfully",
+    accessToken,
+  });
 });
 
 export const getMe = asyncHandler(async (req: Request, res: Response) => {
@@ -42,3 +47,43 @@ export const getMe = asyncHandler(async (req: Request, res: Response) => {
     .status(200)
     .json({ status: 200, message: "User retrieved successfully", data: user });
 });
+
+export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
+  const { email, code } = req.body;
+
+  const verifiedEmail = await verifyEmailService(email, code);
+
+  return res.status(200).json({
+    status: 200,
+    message: "Email verified successfully",
+    data: verifiedEmail,
+  });
+});
+
+export const forgotPassword = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { email } = req.body;
+
+    const verifiedEmail = await forgotPasswordService(email);
+
+    return res.status(200).json({
+      status: 200,
+      message: "Password changed successfully",
+      data: verifiedEmail,
+    });
+  },
+);
+
+export const resetPassword = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { email, code, Password } = req.body;
+
+    const verifiedEmail = await resetPasswordService(email, code, Password);
+
+    return res.status(200).json({
+      status: 200,
+      message: "Password changed successfully",
+      data: verifiedEmail,
+    });
+  },
+);
