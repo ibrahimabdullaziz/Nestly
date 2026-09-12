@@ -1,14 +1,18 @@
 import { Prisma } from "@prisma/client";
 import ApiError from "../../common/utils/ApiError";
-import prisma from "../../db/prisma";
 import {
   listUnitsQueryDto,
   updateUnitsDto,
   unitsDto,
 } from "./units.validation";
+import { unitServiceDependencies } from "./dependencies/units.dependencies";
+
+export { unitServiceDependencies } from "./dependencies/units.dependencies";
 
 const verifyUnit = async (unitId: string, ownerId: string) => {
-  const unit = await prisma.unit.findUnique({ where: { id: unitId } });
+  const unit = await unitServiceDependencies.prisma.unit.findUnique({
+    where: { id: unitId },
+  });
 
   if (!unit) {
     throw new ApiError(404, "This unit is not found");
@@ -20,7 +24,7 @@ const verifyUnit = async (unitId: string, ownerId: string) => {
 };
 
 export async function createUnitService(ownerId: string, data: unitsDto) {
-  const unit = await prisma.unit.create({
+  const unit = await unitServiceDependencies.prisma.unit.create({
     data: { ...data, ownerId },
   });
 
@@ -32,7 +36,9 @@ export async function updateUnitService(
   ownerId: string,
   data: updateUnitsDto,
 ) {
-  const unit = await prisma.unit.findUnique({ where: { id: unitId } });
+  const unit = await unitServiceDependencies.prisma.unit.findUnique({
+    where: { id: unitId },
+  });
 
   if (!unit) {
     throw new ApiError(404, "this unit is not found");
@@ -42,7 +48,7 @@ export async function updateUnitService(
     throw new ApiError(403, "Not your unit");
   }
 
-  const updatedUnit = await prisma.unit.update({
+  const updatedUnit = await unitServiceDependencies.prisma.unit.update({
     where: { id: unitId },
     data: { ...data },
   });
@@ -68,7 +74,7 @@ export async function listUnitsService(filters: listUnitsQueryDto) {
     where.pricePerNight = priceFilter;
   }
 
-  const listedUnits = await prisma.unit.findMany({
+  const listedUnits = await unitServiceDependencies.prisma.unit.findMany({
     where,
     skip: (page - 1) * limit,
     take: limit,
@@ -78,7 +84,7 @@ export async function listUnitsService(filters: listUnitsQueryDto) {
 }
 
 export async function getUnitByIdService(id: string) {
-  const unit = await prisma.unit.findFirst({
+  const unit = await unitServiceDependencies.prisma.unit.findFirst({
     where: { id, deletedAt: null, isActive: true },
     include: {
       photos: true,
@@ -102,7 +108,7 @@ export async function getUnitByIdService(id: string) {
 }
 
 export async function listMyUnitsService(ownerId: string) {
-  const units = await prisma.unit.findMany({
+  const units = await unitServiceDependencies.prisma.unit.findMany({
     where: { ownerId, deletedAt: null },
   });
 
@@ -111,7 +117,7 @@ export async function listMyUnitsService(ownerId: string) {
 
 export async function deactivateUnitService(unitId: string, ownerId: string) {
   await verifyUnit(unitId, ownerId);
-  const unit = await prisma.unit.update({
+  const unit = await unitServiceDependencies.prisma.unit.update({
     where: { id: unitId },
     data: { isActive: false },
   });
@@ -124,7 +130,7 @@ export async function deactivateUnitService(unitId: string, ownerId: string) {
 
 export async function activateUnitService(unitId: string, ownerId: string) {
   await verifyUnit(unitId, ownerId);
-  const unit = await prisma.unit.update({
+  const unit = await unitServiceDependencies.prisma.unit.update({
     where: { id: unitId },
     data: { isActive: true },
   });
@@ -137,7 +143,7 @@ export async function activateUnitService(unitId: string, ownerId: string) {
 
 export async function softDeleteUnitService(unitId: string, ownerId: string) {
   await verifyUnit(unitId, ownerId);
-  const unit = await prisma.unit.update({
+  const unit = await unitServiceDependencies.prisma.unit.update({
     where: { id: unitId },
     data: { deletedAt: new Date() },
   });
