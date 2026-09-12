@@ -1,9 +1,24 @@
 import ApiError from "../../common/utils/ApiError";
-import prisma from "../../db/prisma";
 import { BookingStatus, Prisma } from "@prisma/client";
+import { bookingServiceDependencies } from "./dependencies/bookings.dependencies";
+import type { BookingTransaction } from "./types/bookings.types";
+
+export { bookingServiceDependencies } from "./dependencies/bookings.dependencies";
+
+const prisma = bookingServiceDependencies.prisma;
+
+function validateDates(checkIn: Date, checkOut: Date) {
+  if (
+    Number.isNaN(checkIn.getTime()) ||
+    Number.isNaN(checkOut.getTime()) ||
+    checkOut <= checkIn
+  ) {
+    throw new ApiError(400, "Invalid booking dates");
+  }
+}
 
 async function isUnitAvailable(
-  tx: Prisma.TransactionClient,
+  tx: BookingTransaction,
   unitId: string,
   checkIn: Date,
   checkOut: Date,
@@ -23,6 +38,7 @@ async function isUnitAvailable(
 }
 
 async function calculatePrice(unitId: string, checkIn: Date, checkOut: Date) {
+  validateDates(checkIn, checkOut);
   const unit = await prisma.unit.findUnique({ where: { id: unitId } });
 
   if (!unit) {
@@ -67,6 +83,7 @@ export async function createBookingService(
   checkIn: Date,
   checkOut: Date,
 ) {
+  validateDates(checkIn, checkOut);
   const totalPrice = await calculatePrice(unitId, checkIn, checkOut);
   if (isNaN(totalPrice) || totalPrice <= 0) {
     throw new ApiError(400, "Invalid pricing for the selected dates");
@@ -108,13 +125,13 @@ export async function updateBookingService(
 ) {
   const checkIn = newDates[0];
   const checkOut = newDates[1];
+  if (!checkIn || !checkOut) {
+    throw new ApiError(400, "Invalid booking dates");
+  }
+  validateDates(checkIn, checkOut);
   const existingBooking = await prisma.booking.findFirst({
     where: { id: bookingId, guestId: guestId },
   });
-
-  if (!checkIn || !checkOut) {
-    throw new ApiError(409, "invalid dates!");
-  }
 
   if (!existingBooking) {
     throw new ApiError(404, "Booking not found");
@@ -172,6 +189,10 @@ export async function cancelBookingService(bookingId: string, guestId: string) {
       403,
       "you are not authorized to access this unit bookings!",
     );
+  }
+
+  if (booking.status !== "PENDING") {
+    throw new ApiError(400, "Only pending bookings can be canceled");
   }
 
   const canceledBooking = await prisma.booking.update({
