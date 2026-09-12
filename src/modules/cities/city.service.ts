@@ -26,3 +26,5 @@ export const createCityService = async (data: CityDto) => {
   }
   return city;
 };
+
+export const cityServices = { getAllCitiesService, createCityService };

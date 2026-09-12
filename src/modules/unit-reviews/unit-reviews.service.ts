@@ -48,3 +48,8 @@ export async function getUnitReviewsService(unitId: string) {
 
   return { reviews, avgRating };
 }
+
+export const reviewServices = {
+  createReviewService,
+  getUnitReviewsService,
+};

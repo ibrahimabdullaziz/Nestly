@@ -26,3 +26,8 @@ export const createCurrencyService = async (data: CurrencyDto) => {
   }
   return currency;
 };
+
+export const currencyServices = {
+  getAllCurrencyService,
+  createCurrencyService,
+};

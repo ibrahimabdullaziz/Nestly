@@ -1,16 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import asyncHandler from "../../common/utils/asyncHandler";
 import ApiError from "../../common/utils/ApiError";
-import {
-  activateUnitService,
-  createUnitService,
-  deactivateUnitService,
-  getUnitByIdService,
-  listMyUnitsService,
-  listUnitsService,
-  softDeleteUnitService,
-  updateUnitService,
-} from "./units.service";
+import { unitServices } from "./units.service";
 import { listUnitsQuerySchema } from "./units.validation";
 
 const typesChecking = (req: Request) => {
@@ -34,7 +25,7 @@ export const createUnit = asyncHandler(
       throw new ApiError(401, "User ID is required");
     }
 
-    const unit = await createUnitService(req.user.id, req.body);
+    const unit = await unitServices.createUnitService(req.user.id, req.body);
 
     return res.status(201).json({
       status: 201,
@@ -56,7 +47,11 @@ export const updateUnit = asyncHandler(
       throw new ApiError(401, "User ID is required");
     }
 
-    const unit = await updateUnitService(unitId, req.user.id, req.body);
+    const unit = await unitServices.updateUnitService(
+      unitId,
+      req.user.id,
+      req.body,
+    );
 
     return res.status(200).json({
       status: 200,
@@ -77,7 +72,7 @@ export const listUnits = asyncHandler(
 
     const filters = result.data;
 
-    const units = await listUnitsService(filters);
+    const units = await unitServices.listUnitsService(filters);
 
     return res.status(200).json({
       status: 200,
@@ -94,7 +89,7 @@ export const getUnitById = asyncHandler(
       throw new ApiError(400, "unit ID is required");
     }
 
-    const unit = await getUnitByIdService(id);
+    const unit = await unitServices.getUnitByIdService(id);
 
     return res.status(200).json({
       status: 200,
@@ -110,7 +105,7 @@ export const listMyUnits = asyncHandler(
       throw new ApiError(401, "User ID is required");
     }
 
-    const listedUnits = await listMyUnitsService(req.user.id);
+    const listedUnits = await unitServices.listMyUnitsService(req.user.id);
 
     return res.status(200).json({
       status: 200,
@@ -124,7 +119,7 @@ export const activateUnit = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { unitId, userId } = typesChecking(req);
 
-    const unit = await activateUnitService(unitId, userId);
+    const unit = await unitServices.activateUnitService(unitId, userId);
 
     return res.status(200).json({
       status: 200,
@@ -138,7 +133,7 @@ export const softDeleteUnit = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { unitId, userId } = typesChecking(req);
 
-    const unit = await softDeleteUnitService(unitId, userId);
+    const unit = await unitServices.softDeleteUnitService(unitId, userId);
 
     return res.status(200).json({
       status: 200,
@@ -152,7 +147,7 @@ export const deactivateUnit = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { unitId, userId } = typesChecking(req);
 
-    const unit = await deactivateUnitService(unitId, userId);
+    const unit = await unitServices.deactivateUnitService(unitId, userId);
 
     return res.status(200).json({
       status: 200,

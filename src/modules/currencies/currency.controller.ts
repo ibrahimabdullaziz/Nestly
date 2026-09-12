@@ -1,14 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import asyncHandler from "../../common/utils/asyncHandler";
 import ApiError from "../../common/utils/ApiError";
-import {
-  createCurrencyService,
-  getAllCurrencyService,
-} from "./currency.service";
+import { currencyServices } from "./currency.service";
 
 export const getAllCurrencies = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const currencies = await getAllCurrencyService();
+    const currencies = await currencyServices.getAllCurrencyService();
     if (!currencies) {
       throw new ApiError(500, "Error occurred while fetching currencies data.");
     }
@@ -25,7 +22,7 @@ export const getAllCurrencies = asyncHandler(
 
 export const createCurrency = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const currency = await createCurrencyService(req.body);
+    const currency = await currencyServices.createCurrencyService(req.body);
 
     if (!currency) {
       throw new ApiError(500, "Error occurred while creation process.");

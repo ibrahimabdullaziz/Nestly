@@ -147,3 +147,14 @@ export async function softDeleteUnitService(unitId: string, ownerId: string) {
   }
   return unit;
 }
+
+export const unitServices = {
+  createUnitService,
+  updateUnitService,
+  listUnitsService,
+  getUnitByIdService,
+  listMyUnitsService,
+  activateUnitService,
+  softDeleteUnitService,
+  deactivateUnitService,
+};

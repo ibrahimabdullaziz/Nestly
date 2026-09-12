@@ -26,3 +26,5 @@ export const createCountryService = async (data: CountryDto) => {
   }
   return country;
 };
+
+export const countryServices = { getAllCountriesService, createCountryService };

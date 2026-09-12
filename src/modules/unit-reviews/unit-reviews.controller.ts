@@ -1,10 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import asyncHandler from "../../common/utils/asyncHandler";
 import ApiError from "../../common/utils/ApiError";
-import {
-  createReviewService,
-  getUnitReviewsService,
-} from "./unit-reviews.service";
+import { reviewServices } from "./unit-reviews.service";
 
 const extractUserId = (req: Request) => {
   if (!req.user?.id) throw new ApiError(401, "User ID is required");
@@ -22,7 +19,7 @@ export const createReview = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const guestId = extractUserId(req);
     const unitId = extractUnitId(req);
-    const review = await createReviewService(
+    const review = await reviewServices.createReviewService(
       guestId,
       unitId,
       req.body.rating,
@@ -45,7 +42,7 @@ export const getUnitReviews = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const unitId = extractUnitId(req);
 
-    const reviews = await getUnitReviewsService(unitId);
+    const reviews = await reviewServices.getUnitReviewsService(unitId);
 
     if (reviews) {
       res.status(200).json({

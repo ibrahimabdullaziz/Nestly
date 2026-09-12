@@ -77,3 +77,8 @@ export async function deleteUnitPhotoService(photoId: string, ownerId: string) {
     where: { id: photo.id },
   });
 }
+
+export const unitPhotoServices = {
+  uploadUnitPhotoService,
+  deleteUnitPhotoService,
+};

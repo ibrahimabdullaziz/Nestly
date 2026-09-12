@@ -35,3 +35,9 @@ export async function listFavoritesService(userId: string) {
 
   return units;
 }
+
+export const favoriteServices = {
+  addFavoriteService,
+  removeFavoriteService,
+  listFavoritesService,
+};

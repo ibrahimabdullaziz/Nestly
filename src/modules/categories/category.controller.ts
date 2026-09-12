@@ -1,14 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import asyncHandler from "../../common/utils/asyncHandler";
 import ApiError from "../../common/utils/ApiError";
-import {
-  createCategoryService,
-  getAllCategoriesService,
-} from "./category.service";
+import { categoryServices } from "./category.service";
 
 export const getAllCategories = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const categories = await getAllCategoriesService();
+    const categories = await categoryServices.getAllCategoriesService();
     if (!categories) {
       throw new ApiError(500, "Error occurred while fetching categories data.");
     }
@@ -25,7 +22,7 @@ export const getAllCategories = asyncHandler(
 
 export const createCategory = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const category = await createCategoryService(req.body);
+    const category = await categoryServices.createCategoryService(req.body);
 
     if (!category) {
       throw new ApiError(500, "Error occurred while creation process.");

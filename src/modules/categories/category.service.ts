@@ -26,3 +26,8 @@ export const createCategoryService = async (data: CategoryDto) => {
   }
   return category;
 };
+
+export const categoryServices = {
+  getAllCategoriesService,
+  createCategoryService,
+};

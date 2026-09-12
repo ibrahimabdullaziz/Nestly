@@ -1,14 +1,11 @@
-import {
-  createCountryService,
-  getAllCountriesService,
-} from "./countries.service";
+import { countryServices } from "./countries.service";
 import { Request, Response, NextFunction } from "express";
 import asyncHandler from "../../common/utils/asyncHandler";
 import ApiError from "../../common/utils/ApiError";
 
 export const getAllCountries = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const countries = await getAllCountriesService();
+    const countries = await countryServices.getAllCountriesService();
     if (!countries) {
       throw new ApiError(500, "Error occurred while fetching countries data.");
     }
@@ -25,7 +22,7 @@ export const getAllCountries = asyncHandler(
 
 export const createCountry = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const country = await createCountryService(req.body);
+    const country = await countryServices.createCountryService(req.body);
 
     if (!country) {
       throw new ApiError(500, "Error occurred while creation process.");

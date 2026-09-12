@@ -1,9 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import asyncHandler from "../../common/utils/asyncHandler";
-import {
-  deleteUnitPhotoService,
-  uploadUnitPhotoService,
-} from "./unit-photos.service";
+import { unitPhotoServices } from "./unit-photos.service";
 import ApiError from "../../common/utils/ApiError";
 
 export const uploadUnitPhoto = asyncHandler(
@@ -19,7 +16,7 @@ export const uploadUnitPhoto = asyncHandler(
       throw new ApiError(400, "Unit ID and photo file are required");
     }
 
-    const photo = await uploadUnitPhotoService(
+    const photo = await unitPhotoServices.uploadUnitPhotoService(
       unitId,
       req.user.id,
       file.buffer,
@@ -44,7 +41,7 @@ export const deleteUnitPhoto = asyncHandler(
       throw new ApiError(400, "Photo ID is required");
     }
 
-    await deleteUnitPhotoService(photoId, req.user.id);
+    await unitPhotoServices.deleteUnitPhotoService(photoId, req.user.id);
 
     return res.status(200).json({
       status: 200,
