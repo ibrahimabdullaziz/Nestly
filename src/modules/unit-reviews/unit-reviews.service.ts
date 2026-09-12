@@ -1,5 +1,6 @@
 import ApiError from "../../common/utils/ApiError";
-import prisma from "../../db/prisma";
+import { reviewServiceDependencies } from "./dependencies/reviews.dependencies";
+export { reviewServiceDependencies } from "./dependencies/reviews.dependencies";
 
 export async function createReviewService(
   guestId: string,
@@ -7,7 +8,7 @@ export async function createReviewService(
   rating: number,
   comment: string,
 ) {
-  const booking = await prisma.booking.findFirst({
+  const booking = await reviewServiceDependencies.prisma.booking.findFirst({
     where: {
       guestId: guestId,
       unitId: unitId,
@@ -19,7 +20,7 @@ export async function createReviewService(
     throw new ApiError(403, "You can`t access this booking");
   }
 
-  const review = await prisma.unitReview.create({
+  const review = await reviewServiceDependencies.prisma.unitReview.create({
     data: {
       unitId,
       guestId,
@@ -36,15 +37,17 @@ export async function createReviewService(
 }
 
 export async function getUnitReviewsService(unitId: string) {
-  const reviews = await prisma.unitReview.findMany({
+  const reviews = await reviewServiceDependencies.prisma.unitReview.findMany({
     where: { unitId: unitId },
     include: { unit: true },
   });
 
-  const avgRating = await prisma.unitReview.aggregate({
-    _avg: { rating: true },
-    where: { unitId: unitId },
-  });
+  const avgRating = await reviewServiceDependencies.prisma.unitReview.aggregate(
+    {
+      _avg: { rating: true },
+      where: { unitId: unitId },
+    },
+  );
 
   return { reviews, avgRating };
 }

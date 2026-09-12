@@ -1,11 +1,12 @@
 import ApiError from "../../common/utils/ApiError";
-import PrismaClient from "../../db/prisma";
 import { CountryDto } from "./country.validation";
-
-const prisma = PrismaClient;
+import { countryServiceDependencies } from "./dependencies/countries.dependencies";
+export { countryServiceDependencies } from "./dependencies/countries.dependencies";
 
 export const getAllCountriesService = async () => {
-  const countries = await prisma.country.findMany({});
+  const countries = await countryServiceDependencies.prisma.country.findMany(
+    {},
+  );
   if (!countries) {
     throw new ApiError(500, "failed to fetch countries data.");
   }
@@ -15,7 +16,7 @@ export const getAllCountriesService = async () => {
 
 export const createCountryService = async (data: CountryDto) => {
   const { ...countryData } = data;
-  const country = await prisma.country.create({
+  const country = await countryServiceDependencies.prisma.country.create({
     data: {
       ...countryData,
     },

@@ -1,12 +1,17 @@
 import ApiError from "../../common/utils/ApiError";
-import prisma from "../../db/prisma";
+import { otpServiceDependencies } from "./dependencies/otp.dependencies";
+export { otpServiceDependencies } from "./dependencies/otp.dependencies";
 
 export async function generateOtp(email: string, purpose: string) {
-  const generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const generatedCode = Math.floor(
+    100000 + otpServiceDependencies.random() * 900000,
+  ).toString();
 
-  const expireDate = new Date(Date.now() + 10 * 60 * 1000);
+  const expireDate = new Date(
+    otpServiceDependencies.now().getTime() + 10 * 60 * 1000,
+  );
 
-  const otp = await prisma.otp.upsert({
+  const otp = await otpServiceDependencies.prisma.otp.upsert({
     create: {
       email: email,
       code: generatedCode,
@@ -29,13 +34,13 @@ export async function generateOtp(email: string, purpose: string) {
 }
 
 export async function verifyOtp(email: string, code: string, purpose: string) {
-  const otp = await prisma.otp.findFirst({
+  const otp = await otpServiceDependencies.prisma.otp.findFirst({
     where: {
       email: email,
       code: code,
       purpose: purpose,
       usedAt: null,
-      expiresAt: { gt: new Date() },
+      expiresAt: { gt: otpServiceDependencies.now() },
     },
   });
 
@@ -43,7 +48,7 @@ export async function verifyOtp(email: string, code: string, purpose: string) {
     throw new ApiError(400, "Invalid or expired OTP");
   }
 
-  await prisma.otp.update({
+  await otpServiceDependencies.prisma.otp.update({
     where: { id: otp.id },
     data: { usedAt: new Date() },
   });

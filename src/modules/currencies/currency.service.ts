@@ -1,11 +1,12 @@
 import ApiError from "../../common/utils/ApiError";
-import PrismaClient from "../../db/prisma";
 import { CurrencyDto } from "./currency.validation";
-
-const prisma = PrismaClient;
+import { currencyServiceDependencies } from "./dependencies/currencies.dependencies";
+export { currencyServiceDependencies } from "./dependencies/currencies.dependencies";
 
 export const getAllCurrencyService = async () => {
-  const currencies = await prisma.currency.findMany({});
+  const currencies = await currencyServiceDependencies.prisma.currency.findMany(
+    {},
+  );
   if (!currencies) {
     throw new ApiError(500, "failed to fetch currencies data.");
   }
@@ -15,7 +16,7 @@ export const getAllCurrencyService = async () => {
 
 export const createCurrencyService = async (data: CurrencyDto) => {
   const { ...currencyData } = data;
-  const currency = await prisma.currency.create({
+  const currency = await currencyServiceDependencies.prisma.currency.create({
     data: {
       ...currencyData,
     },
