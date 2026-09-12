@@ -9,6 +9,7 @@
     "test:integration": "mocha \"test/integration/**/*.spec.ts\"",
     "test:e2e": "mocha \"test/e2e/**/*.spec.ts\"",
     "test:coverage": "nyc tsx ../node_modules/mocha/bin/mocha.js \"test/unit/**/*.spec.ts\"",
+    "test:coverage:critical": "nyc --include \"src/modules/auth/**/*.ts\" --include \"src/common/middleware/**/*.ts\" --include \"src/modules/units/**/*.ts\" --include \"src/modules/bookings/**/*.ts\" --check-coverage --statements 75 --lines 75 --functions 75 --branches 65 tsx ../node_modules/mocha/bin/mocha.js \"test/unit/**/*.spec.ts\"",
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js"
