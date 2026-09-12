@@ -1,25 +1,27 @@
-import bcrypt from "bcryptjs";
 import ApiError from "../../common/utils/ApiError";
-import {
-  signAccessToken,
-  signRefreshToken,
-  verifyRefreshToken,
-} from "../../common/utils/jwt";
-import { createUser, findByEmail } from "../users/users.service";
 import { RegisterDto } from "./auth.validation";
-import { generateOtp, verifyOtp } from "../otp/otp.service";
-import { sendMail } from "../mail/mail.service";
-import prisma from "../../db/prisma";
+import { authServiceDependencies } from "./dependencies/auth.dependencies";
+
+export { authServiceDependencies } from "./dependencies/auth.dependencies";
 
 export async function registerService(data: RegisterDto) {
-  const user = await createUser(data);
+  const user = await authServiceDependencies.createUser(data);
   if (!user) {
     throw new ApiError(500, "Server Error While Creation Operation");
   }
 
-  const accessToken = signAccessToken({ id: user.id, role: user.role });
-  const refreshToken = signRefreshToken({ id: user.id, role: user.role });
-  const otp = await generateOtp(user.email, "VERIFY_EMAIL");
+  const accessToken = authServiceDependencies.signAccessToken({
+    id: user.id,
+    role: user.role,
+  });
+  const refreshToken = authServiceDependencies.signRefreshToken({
+    id: user.id,
+    role: user.role,
+  });
+  const otp = await authServiceDependencies.generateOtp(
+    user.email,
+    "VERIFY_EMAIL",
+  );
 
   const html = `
  <div style="font-family: sans-serif; max-width: 400px; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
@@ -30,38 +32,52 @@ export async function registerService(data: RegisterDto) {
  </div>
   `;
 
-  sendMail({ to: user.email, subject: "Verify your email", html: html });
+  authServiceDependencies.sendMail({
+    to: user.email,
+    subject: "Verify your email",
+    html: html,
+  });
 
   return { accessToken, refreshToken, user };
 }
 
 export async function loginService(email: string, password: string) {
-  const user = await findByEmail(email);
+  const user = await authServiceDependencies.findByEmail(email);
 
   if (!user) {
     throw new ApiError(401, "Invalid credentials");
   }
 
-  const rowPassword = await bcrypt.compare(password, user.password);
+  const rowPassword = await authServiceDependencies.bcrypt.compare(
+    password,
+    user.password,
+  );
 
   if (!rowPassword) {
     throw new ApiError(401, "Invalid credentials");
   }
 
-  const accessToken = signAccessToken({ id: user.id, role: user.role });
-  const refreshToken = signRefreshToken({ id: user.id, role: user.role });
+  const accessToken = authServiceDependencies.signAccessToken({
+    id: user.id,
+    role: user.role,
+  });
+  const refreshToken = authServiceDependencies.signRefreshToken({
+    id: user.id,
+    role: user.role,
+  });
 
   return { accessToken, refreshToken, user };
 }
 
 export async function refreshService(refreshToken: string) {
-  const refreshedToken = await verifyRefreshToken(refreshToken);
+  const refreshedToken =
+    await authServiceDependencies.verifyRefreshToken(refreshToken);
 
   if (!refreshedToken) {
     throw new ApiError(403, "Unotherized, failed in verifing the credentials");
   }
 
-  const token = signAccessToken({
+  const token = authServiceDependencies.signAccessToken({
     id: refreshedToken.id,
     role: refreshedToken.role,
   });
@@ -69,9 +85,9 @@ export async function refreshService(refreshToken: string) {
 }
 
 export async function verifyEmailService(email: string, code: string) {
-  await verifyOtp(email, code, "VERIFY_EMAIL");
+  await authServiceDependencies.verifyOtp(email, code, "VERIFY_EMAIL");
 
-  const user = await prisma.user.update({
+  const user = await authServiceDependencies.prisma.user.update({
     where: { email: email },
     data: { isVerified: true },
   });
@@ -80,7 +96,7 @@ export async function verifyEmailService(email: string, code: string) {
 }
 
 export async function forgotPasswordService(email: string) {
-  const user = await prisma.user.findFirst({
+  const user = await authServiceDependencies.prisma.user.findFirst({
     where: { email: email },
   });
 
@@ -88,7 +104,10 @@ export async function forgotPasswordService(email: string) {
     throw new ApiError(404, "user not found");
   }
 
-  const otpCode = await generateOtp(email, "RESET_PASSWORD");
+  const otpCode = await authServiceDependencies.generateOtp(
+    email,
+    "RESET_PASSWORD",
+  );
 
   const html = `
  <div style="font-family: sans-serif; max-width: 400px; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
@@ -99,7 +118,11 @@ export async function forgotPasswordService(email: string) {
  </div>
   `;
 
-  sendMail({ to: user.email, subject: "Reset Password", html: html });
+  authServiceDependencies.sendMail({
+    to: user.email,
+    subject: "Reset Password",
+    html: html,
+  });
 }
 
 export async function resetPasswordService(
@@ -107,11 +130,14 @@ export async function resetPasswordService(
   code: string,
   newPassword: string,
 ) {
-  await verifyOtp(email, code, "RESET_PASSWORD");
+  await authServiceDependencies.verifyOtp(email, code, "RESET_PASSWORD");
 
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  const hashedPassword = await authServiceDependencies.bcrypt.hash(
+    newPassword,
+    10,
+  );
 
-  const updatedUser = await prisma.user.update({
+  const updatedUser = await authServiceDependencies.prisma.user.update({
     where: { email },
     data: { password: hashedPassword },
   });
