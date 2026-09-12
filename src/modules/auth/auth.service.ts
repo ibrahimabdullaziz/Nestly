@@ -124,3 +124,12 @@ export async function resetPasswordService(
 
   return updatedUser;
 }
+
+export const authServices = {
+  registerService,
+  loginService,
+  refreshService,
+  verifyEmailService,
+  forgotPasswordService,
+  resetPasswordService,
+};

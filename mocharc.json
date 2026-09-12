@@ -1,0 +1,6 @@
+{
+  "loader": "tsx",
+  "extension": ["ts"],
+  "spec": "test/**/*.spec.ts",
+  "timeout": 5000
+}

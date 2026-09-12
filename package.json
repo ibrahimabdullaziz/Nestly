@@ -4,7 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run test:unit",
+    "test:unit": "tsx ../node_modules/mocha/bin/mocha.js \"test/unit/**/*.spec.ts\"",
+    "test:integration": "mocha \"test/integration/**/*.spec.ts\"",
+    "test:e2e": "mocha \"test/e2e/**/*.spec.ts\"",
+    "test:coverage": "nyc mocha \"test/unit/**/*.spec.ts\"",
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js"

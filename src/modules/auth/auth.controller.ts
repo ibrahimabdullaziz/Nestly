@@ -1,18 +1,16 @@
 import { Request, Response } from "express";
 import asyncHandler from "../../common/utils/asyncHandler";
-import {
-  loginService,
-  registerService,
-  refreshService,
-  verifyEmailService,
-  forgotPasswordService,
-  resetPasswordService,
-} from "./auth.service";
+import { authServices } from "./auth.service";
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const { email, password, firstName, lastName } = req.body;
 
-  const data = await registerService({ email, password, firstName, lastName });
+  const data = await authServices.registerService({
+    email,
+    password,
+    firstName,
+    lastName,
+  });
 
   return res
     .status(201)
@@ -22,7 +20,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
-  const data = await loginService(email, password);
+  const data = await authServices.loginService(email, password);
 
   return res
     .status(200)
@@ -32,7 +30,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 export const refresh = asyncHandler(async (req: Request, res: Response) => {
   const { token } = req.body;
 
-  const accessToken = await refreshService(token);
+  const accessToken = await authServices.refreshService(token);
 
   return res.status(200).json({
     status: 200,
@@ -51,7 +49,7 @@ export const getMe = asyncHandler(async (req: Request, res: Response) => {
 export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
   const { email, code } = req.body;
 
-  const verifiedEmail = await verifyEmailService(email, code);
+  const verifiedEmail = await authServices.verifyEmailService(email, code);
 
   return res.status(200).json({
     status: 200,
@@ -64,7 +62,7 @@ export const forgotPassword = asyncHandler(
   async (req: Request, res: Response) => {
     const { email } = req.body;
 
-    const verifiedEmail = await forgotPasswordService(email);
+    const verifiedEmail = await authServices.forgotPasswordService(email);
 
     return res.status(200).json({
       status: 200,
@@ -76,9 +74,13 @@ export const forgotPassword = asyncHandler(
 
 export const resetPassword = asyncHandler(
   async (req: Request, res: Response) => {
-    const { email, code, Password } = req.body;
+    const { email, code, password } = req.body;
 
-    const verifiedEmail = await resetPasswordService(email, code, Password);
+    const verifiedEmail = await authServices.resetPasswordService(
+      email,
+      code,
+      password,
+    );
 
     return res.status(200).json({
       status: 200,

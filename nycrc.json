@@ -1,0 +1,8 @@
+{
+  "all": true,
+  "extension": [".ts"],
+  "include": ["src/**/*.ts"],
+  "exclude": ["test/**/*.ts", "**/*.d.ts"],
+  "reporter": ["text", "html"],
+  "report-dir": "./coverage"
+}
