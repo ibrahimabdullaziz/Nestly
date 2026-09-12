@@ -203,3 +203,13 @@ export async function getHostBookingsService(hostId: string) {
     include: { unit: true },
   });
 }
+
+export const bookingServices = {
+  createBookingService,
+  updateBookingService,
+  cancelBookingService,
+  confirmBookingService,
+  rejectBookingService,
+  getGuestBookingsService,
+  getHostBookingsService,
+};

@@ -1,15 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import asyncHandler from "../../common/utils/asyncHandler";
 import ApiError from "../../common/utils/ApiError";
-import {
-  cancelBookingService,
-  confirmBookingService,
-  createBookingService,
-  rejectBookingService,
-  updateBookingService,
-  getGuestBookingsService,
-  getHostBookingsService,
-} from "./bookings.service";
+import { bookingServices } from "./bookings.service";
 
 const extractUserId = (req: Request) => {
   if (!req.user?.id) throw new ApiError(401, "User ID is required");
@@ -18,7 +10,8 @@ const extractUserId = (req: Request) => {
 
 const extractBookingId = (req: Request) => {
   const id = req.params.id;
-  if (!id || typeof id !== "string") throw new ApiError(400, "Booking ID is required");
+  if (!id || typeof id !== "string")
+    throw new ApiError(400, "Booking ID is required");
   return id;
 };
 
@@ -31,7 +24,7 @@ export const createBooking = asyncHandler(
       throw new ApiError(400, "unitId, checkIn, and checkOut are required");
     }
 
-    const booking = await createBookingService(
+    const booking = await bookingServices.createBookingService(
       guestId,
       unitId,
       new Date(checkIn),
@@ -56,10 +49,11 @@ export const updateBooking = asyncHandler(
       throw new ApiError(400, "checkIn and checkOut are required");
     }
 
-    const booking = await updateBookingService(bookingId, guestId, [
-      new Date(checkIn),
-      new Date(checkOut),
-    ]);
+    const booking = await bookingServices.updateBookingService(
+      bookingId,
+      guestId,
+      [new Date(checkIn), new Date(checkOut)],
+    );
 
     res.status(200).json({
       status: 200,
@@ -74,7 +68,10 @@ export const cancelBooking = asyncHandler(
     const guestId = extractUserId(req);
     const bookingId = extractBookingId(req);
 
-    const booking = await cancelBookingService(bookingId, guestId);
+    const booking = await bookingServices.cancelBookingService(
+      bookingId,
+      guestId,
+    );
 
     res.status(200).json({
       status: 200,
@@ -89,7 +86,10 @@ export const confirmBooking = asyncHandler(
     const hostId = extractUserId(req);
     const bookingId = extractBookingId(req);
 
-    const booking = await confirmBookingService(bookingId, hostId);
+    const booking = await bookingServices.confirmBookingService(
+      bookingId,
+      hostId,
+    );
 
     res.status(200).json({
       status: 200,
@@ -104,7 +104,10 @@ export const rejectBooking = asyncHandler(
     const hostId = extractUserId(req);
     const bookingId = extractBookingId(req);
 
-    const booking = await rejectBookingService(bookingId, hostId);
+    const booking = await bookingServices.rejectBookingService(
+      bookingId,
+      hostId,
+    );
 
     res.status(200).json({
       status: 200,
@@ -117,7 +120,7 @@ export const rejectBooking = asyncHandler(
 export const getGuestBookings = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const guestId = extractUserId(req);
-    const bookings = await getGuestBookingsService(guestId);
+    const bookings = await bookingServices.getGuestBookingsService(guestId);
 
     res.status(200).json({
       status: 200,
@@ -130,7 +133,7 @@ export const getGuestBookings = asyncHandler(
 export const getHostBookings = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const hostId = extractUserId(req);
-    const bookings = await getHostBookingsService(hostId);
+    const bookings = await bookingServices.getHostBookingsService(hostId);
 
     res.status(200).json({
       status: 200,
