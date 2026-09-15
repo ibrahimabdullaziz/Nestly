@@ -37,6 +37,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.6.0",
     "@prisma/config": "^7.10.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.19",
