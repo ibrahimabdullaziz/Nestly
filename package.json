@@ -7,7 +7,7 @@
     "test": "npm run test:unit",
     "test:unit": "tsx ../node_modules/mocha/bin/mocha.js \"test/unit/**/*.spec.ts\"",
     "test:integration": "dotenv -e .env.test -- tsx ../node_modules/mocha/bin/mocha.js \"test/integration/**/*.spec.ts\"",
-    "test:e2e": "dotenv -e .env.test -- mocha \"test/e2e/**/*.spec.ts\"",
+    "test:e2e": "dotenv -e .env.test -- tsx ../node_modules/mocha/bin/mocha.js \"test/e2e/**/*.spec.ts\"",
     "prisma:test:status": "dotenv -e .env.test -- prisma migrate status",
     "prisma:test:migrate": "dotenv -e .env.test -- prisma migrate deploy",
     "test:coverage": "nyc tsx ../node_modules/mocha/bin/mocha.js \"test/unit/**/*.spec.ts\"",
@@ -45,6 +45,8 @@
     "@types/morgan": "^1.9.10",
     "@types/node": "^26.3.0",
     "@types/pg": "^8.23.1",
+    "@types/supertest": "^7.2.1",
+    "supertest": "^7.2.2",
     "tsx": "^4.20.3",
     "typescript": "^7.0.2"
   }
