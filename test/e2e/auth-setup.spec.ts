@@ -62,22 +62,18 @@ describe("E2E authentication setup", function () {
     expect(accessToken).to.be.a("string").and.not.empty;
   });
 
-  it("registers, promotes, and authenticates a Host through HTTP", async () => {
+  it("authenticates both the Host and Guest through HTTP", async () => {
     const host = await registerTestUser(request(app), "host");
     createdUserIds.push(host.id);
     await promoteUserToHost(host.id);
 
-    const accessToken = await verifyToken(host, "HOST");
-
-    expect(accessToken).to.be.a("string").and.not.empty;
-  });
-
-  it("registers and authenticates a Guest entirely through HTTP", async () => {
     const guest = await registerTestUser(request(app), "guest");
     createdUserIds.push(guest.id);
 
-    const accessToken = await verifyToken(guest, "GUEST");
+    const hostAccessToken = await verifyToken(host, "HOST");
+    const guestAccessToken = await verifyToken(guest, "GUEST");
 
-    expect(accessToken).to.be.a("string").and.not.empty;
+    expect(hostAccessToken).to.be.a("string").and.not.empty;
+    expect(guestAccessToken).to.be.a("string").and.not.empty;
   });
 });
