@@ -6,8 +6,10 @@
   "scripts": {
     "test": "npm run test:unit",
     "test:unit": "tsx ../node_modules/mocha/bin/mocha.js \"test/unit/**/*.spec.ts\"",
-    "test:integration": "mocha \"test/integration/**/*.spec.ts\"",
-    "test:e2e": "mocha \"test/e2e/**/*.spec.ts\"",
+    "test:integration": "dotenv -e .env.test -- tsx ../node_modules/mocha/bin/mocha.js \"test/integration/**/*.spec.ts\"",
+    "test:e2e": "dotenv -e .env.test -- mocha \"test/e2e/**/*.spec.ts\"",
+    "prisma:test:status": "dotenv -e .env.test -- prisma migrate status",
+    "prisma:test:migrate": "dotenv -e .env.test -- prisma migrate deploy",
     "test:coverage": "nyc tsx ../node_modules/mocha/bin/mocha.js \"test/unit/**/*.spec.ts\"",
     "test:coverage:critical": "nyc --include \"src/modules/auth/**/*.ts\" --include \"src/common/middleware/**/*.ts\" --include \"src/modules/units/**/*.ts\" --include \"src/modules/bookings/**/*.ts\" --check-coverage --statements 75 --lines 75 --functions 75 --branches 65 tsx ../node_modules/mocha/bin/mocha.js \"test/unit/**/*.spec.ts\"",
     "dev": "tsx watch src/server.ts",
