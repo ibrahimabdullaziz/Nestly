@@ -10,6 +10,15 @@ import {
   listFavoritesService,
   removeFavoriteService,
 } from "../../src/modules/unit-favorites/unit-favorites.service";
+import {
+  cleanupUnitFixture,
+  createTestCategory,
+  createTestCity,
+  createTestCountry,
+  createTestCurrency,
+  createTestUnit,
+  createTestUser,
+} from "./helpers/test-data";
 
 describe("reviews and favorites integration", function () {
   this.timeout(30000);
@@ -25,95 +34,56 @@ describe("reviews and favorites integration", function () {
 
   beforeEach(async () => {
     const suffix = Date.now();
-
-    const host = await prisma.user.create({
-      data: {
-        email: `catalog-host-${suffix}@example.com`,
-        password: "hashed-password",
-        firstName: "Catalog",
-        lastName: "Host",
-        role: "HOST",
-      },
+    const host = await createTestUser({
+      emailPrefix: `catalog-host-${suffix}`,
+      firstName: "Catalog",
+      lastName: "Host",
+      role: "HOST",
     });
     hostId = host.id;
-
-    const firstGuest = await prisma.user.create({
-      data: {
-        email: `catalog-first-guest-${suffix}@example.com`,
-        password: "hashed-password",
-        firstName: "First",
-        lastName: "Guest",
-      },
+    const firstGuest = await createTestUser({
+      emailPrefix: `catalog-first-guest-${suffix}`,
+      firstName: "First",
+      lastName: "Guest",
     });
     firstGuestId = firstGuest.id;
-
-    const secondGuest = await prisma.user.create({
-      data: {
-        email: `catalog-second-guest-${suffix}@example.com`,
-        password: "hashed-password",
-        firstName: "Second",
-        lastName: "Guest",
-      },
+    const secondGuest = await createTestUser({
+      emailPrefix: `catalog-second-guest-${suffix}`,
+      firstName: "Second",
+      lastName: "Guest",
     });
     secondGuestId = secondGuest.id;
-
-    const country = await prisma.country.create({
-      data: {
-        name: `Catalog Country ${suffix}`,
-        code: `CF${suffix}`,
-      },
-    });
+    const country = await createTestCountry(`Catalog-${suffix}`);
     countryId = country.id;
-
-    const city = await prisma.city.create({
-      data: {
-        name: `Catalog City ${suffix}`,
-        countryId,
-      },
-    });
+    const city = await createTestCity(`Catalog City ${suffix}`, countryId);
     cityId = city.id;
-
-    const currency = await prisma.currency.create({
-      data: {
-        code: `CF${suffix}`,
-        symbol: "$",
-      },
-    });
+    const currency = await createTestCurrency(`CF${suffix}`);
     currencyId = currency.id;
-
-    const category = await prisma.unitCategory.create({
-      data: { name: `Catalog Category ${suffix}` },
-    });
+    const category = await createTestCategory(`Catalog Category ${suffix}`);
     categoryId = category.id;
-
-    const unit = await prisma.unit.create({
-      data: {
-        title: "Reviews Favorites Unit",
-        description: "A unit for reviews and favorites integration tests",
-        pricePerNight: 100,
-        maxGuests: 2,
-        isActive: true,
-        ownerId: hostId,
-        cityId,
-        currencyId,
-        categoryId,
-      },
+    const unit = await createTestUnit({
+      title: "Reviews Favorites Unit",
+      description: "A unit for reviews and favorites integration tests",
+      pricePerNight: 100,
+      maxGuests: 2,
+      isActive: true,
+      ownerId: hostId,
+      cityId,
+      currencyId,
+      categoryId,
     });
     unitId = unit.id;
   });
 
   afterEach(async () => {
-    await prisma.unitReview.deleteMany({ where: { unitId } });
-    await prisma.unitFavorite.deleteMany({ where: { unitId } });
-    await prisma.booking.deleteMany({ where: { unitId } });
-    await prisma.unit.delete({ where: { id: unitId } });
-    await prisma.city.delete({ where: { id: cityId } });
-    await prisma.country.delete({ where: { id: countryId } });
-    await prisma.currency.delete({ where: { id: currencyId } });
-    await prisma.unitCategory.delete({ where: { id: categoryId } });
-    await prisma.user.delete({ where: { id: secondGuestId } });
-    await prisma.user.delete({ where: { id: firstGuestId } });
-    await prisma.user.delete({ where: { id: hostId } });
+    await cleanupUnitFixture({
+      unitId,
+      cityId,
+      countryId,
+      currencyId,
+      categoryId,
+      userIds: [secondGuestId, firstGuestId, hostId],
+    });
   });
 
   after(async () => {

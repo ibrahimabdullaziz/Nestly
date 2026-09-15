@@ -2,6 +2,15 @@ import { expect } from "chai";
 import { after, afterEach, beforeEach, describe, it } from "mocha";
 import prisma from "../../src/db/prisma";
 import { createBookingService } from "../../src/modules/bookings/bookings.service";
+import {
+  cleanupUnitFixture,
+  createTestCategory,
+  createTestCity,
+  createTestCountry,
+  createTestCurrency,
+  createTestUnit,
+  createTestUser,
+} from "./helpers/test-data";
 
 describe("booking transaction integration", function () {
   this.timeout(10000);
@@ -16,82 +25,50 @@ describe("booking transaction integration", function () {
 
   beforeEach(async () => {
     const suffix = Date.now();
-
-    const host = await prisma.user.create({
-      data: {
-        email: `transaction-host-${suffix}@example.com`,
-        password: "hashed-password",
-        firstName: "Transaction",
-        lastName: "Host",
-        role: "HOST",
-      },
+    const host = await createTestUser({
+      emailPrefix: `transaction-host-${suffix}`,
+      firstName: "Transaction",
+      lastName: "Host",
+      role: "HOST",
     });
     hostId = host.id;
-
-    const guest = await prisma.user.create({
-      data: {
-        email: `transaction-guest-${suffix}@example.com`,
-        password: "hashed-password",
-        firstName: "Transaction",
-        lastName: "Guest",
-      },
+    const guest = await createTestUser({
+      emailPrefix: `transaction-guest-${suffix}`,
+      firstName: "Transaction",
+      lastName: "Guest",
     });
     guestId = guest.id;
-
-    const country = await prisma.country.create({
-      data: {
-        name: `Transaction Country ${suffix}`,
-        code: `TC${suffix}`,
-      },
-    });
+    const country = await createTestCountry(`Transaction-${suffix}`);
     countryId = country.id;
-
-    const city = await prisma.city.create({
-      data: {
-        name: `Transaction City ${suffix}`,
-        countryId,
-      },
-    });
+    const city = await createTestCity(`Transaction City ${suffix}`, countryId);
     cityId = city.id;
-
-    const currency = await prisma.currency.create({
-      data: {
-        code: `TR${suffix}`,
-        symbol: "$",
-      },
-    });
+    const currency = await createTestCurrency(`TR${suffix}`);
     currencyId = currency.id;
-
-    const category = await prisma.unitCategory.create({
-      data: { name: `Transaction Category ${suffix}` },
-    });
+    const category = await createTestCategory(`Transaction Category ${suffix}`);
     categoryId = category.id;
-
-    const unit = await prisma.unit.create({
-      data: {
-        title: "Booking Transaction Unit",
-        description: "A unit for transaction integration tests",
-        pricePerNight: 100,
-        maxGuests: 2,
-        isActive: true,
-        ownerId: hostId,
-        cityId,
-        currencyId,
-        categoryId,
-      },
+    const unit = await createTestUnit({
+      title: "Booking Transaction Unit",
+      description: "A unit for transaction integration tests",
+      pricePerNight: 100,
+      maxGuests: 2,
+      isActive: true,
+      ownerId: hostId,
+      cityId,
+      currencyId,
+      categoryId,
     });
     unitId = unit.id;
   });
 
   afterEach(async () => {
-    await prisma.booking.deleteMany({ where: { unitId } });
-    await prisma.unit.delete({ where: { id: unitId } });
-    await prisma.city.delete({ where: { id: cityId } });
-    await prisma.country.delete({ where: { id: countryId } });
-    await prisma.currency.delete({ where: { id: currencyId } });
-    await prisma.unitCategory.delete({ where: { id: categoryId } });
-    await prisma.user.delete({ where: { id: guestId } });
-    await prisma.user.delete({ where: { id: hostId } });
+    await cleanupUnitFixture({
+      unitId,
+      cityId,
+      countryId,
+      currencyId,
+      categoryId,
+      userIds: [guestId, hostId],
+    });
   });
 
   after(async () => {

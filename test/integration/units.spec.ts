@@ -6,6 +6,15 @@ import {
   listUnitsService,
   softDeleteUnitService,
 } from "../../src/modules/units/units.service";
+import {
+  cleanupUnitFixture,
+  createTestCategory,
+  createTestCity,
+  createTestCountry,
+  createTestCurrency,
+  createTestUnit,
+  createTestUser,
+} from "./helpers/test-data";
 
 describe("units integration", function () {
   this.timeout(10000);
@@ -16,30 +25,21 @@ describe("units integration", function () {
 
   it("creates and persists a unit with its required relations", async () => {
     const suffix = Date.now();
-    const user = await prisma.user.create({
-      data: {
-        email: `unit-persistence-${suffix}@example.com`,
-        password: "hashed-password",
-        firstName: "Unit",
-        lastName: "Owner",
-        role: "HOST",
-      },
+    const user = await createTestUser({
+      emailPrefix: `unit-persistence-${suffix}`,
+      firstName: "Unit",
+      lastName: "Owner",
+      role: "HOST",
     });
-    const country = await prisma.country.create({
-      data: {
-        name: `Unit Persistence Country ${suffix}`,
-        code: `UPC${suffix}`,
-      },
-    });
-    const city = await prisma.city.create({
-      data: { name: `Unit Persistence City ${suffix}`, countryId: country.id },
-    });
-    const currency = await prisma.currency.create({
-      data: { code: `UP${suffix}`, symbol: "$" },
-    });
-    const category = await prisma.unitCategory.create({
-      data: { name: `Unit Persistence Category ${suffix}` },
-    });
+    const country = await createTestCountry(`Unit-Persistence-${suffix}`);
+    const city = await createTestCity(
+      `Unit Persistence City ${suffix}`,
+      country.id,
+    );
+    const currency = await createTestCurrency(`UP${suffix}`);
+    const category = await createTestCategory(
+      `Unit Persistence Category ${suffix}`,
+    );
 
     const unit = await createUnitService(user.id, {
       title: "Integration Unit",
@@ -66,38 +66,29 @@ describe("units integration", function () {
 
       expect(persistedUnit).to.deep.equal(unit);
     } finally {
-      await prisma.unit.delete({ where: { id: unit.id } });
-      await prisma.city.delete({ where: { id: city.id } });
-      await prisma.country.delete({ where: { id: country.id } });
-      await prisma.currency.delete({ where: { id: currency.id } });
-      await prisma.unitCategory.delete({ where: { id: category.id } });
-      await prisma.user.delete({ where: { id: user.id } });
+      await cleanupUnitFixture({
+        unitId: unit.id,
+        cityId: city.id,
+        countryId: country.id,
+        currencyId: currency.id,
+        categoryId: category.id,
+        userIds: [user.id],
+      });
     }
   });
 
   it("excludes soft-deleted units but returns active non-deleted units", async () => {
     const suffix = Date.now();
-    const user = await prisma.user.create({
-      data: {
-        email: `unit-active-${suffix}@example.com`,
-        password: "hashed-password",
-        firstName: "Active",
-        lastName: "Owner",
-        role: "HOST",
-      },
+    const user = await createTestUser({
+      emailPrefix: `unit-active-${suffix}`,
+      firstName: "Active",
+      lastName: "Owner",
+      role: "HOST",
     });
-    const country = await prisma.country.create({
-      data: { name: `Unit Active Country ${suffix}`, code: `UAC${suffix}` },
-    });
-    const city = await prisma.city.create({
-      data: { name: `Unit Active City ${suffix}`, countryId: country.id },
-    });
-    const currency = await prisma.currency.create({
-      data: { code: `UA${suffix}`, symbol: "$" },
-    });
-    const category = await prisma.unitCategory.create({
-      data: { name: `Unit Active Category ${suffix}` },
-    });
+    const country = await createTestCountry(`Unit-Active-${suffix}`);
+    const city = await createTestCity(`Unit Active City ${suffix}`, country.id);
+    const currency = await createTestCurrency(`UA${suffix}`);
+    const category = await createTestCategory(`Unit Active Category ${suffix}`);
     const units = await prisma.unit.createManyAndReturn({
       data: [
         {
@@ -143,40 +134,35 @@ describe("units integration", function () {
       });
       expect(persistedDeletedUnit?.deletedAt).to.not.equal(null);
     } finally {
-      await prisma.unit.deleteMany({
-        where: { id: { in: units.map(({ id }) => id) } },
+      await cleanupUnitFixture({
+        unitId: units[0].id,
+        additionalUnitIds: units.slice(1).map(({ id }) => id),
+        cityId: city.id,
+        countryId: country.id,
+        currencyId: currency.id,
+        categoryId: category.id,
+        userIds: [user.id],
       });
-      await prisma.city.delete({ where: { id: city.id } });
-      await prisma.country.delete({ where: { id: country.id } });
-      await prisma.currency.delete({ where: { id: currency.id } });
-      await prisma.unitCategory.delete({ where: { id: category.id } });
-      await prisma.user.delete({ where: { id: user.id } });
     }
   });
 
   it("filters units by price and paginates the results", async () => {
     const suffix = Date.now();
-    const user = await prisma.user.create({
-      data: {
-        email: `unit-pagination-${suffix}@example.com`,
-        password: "hashed-password",
-        firstName: "Pagination",
-        lastName: "Owner",
-        role: "HOST",
-      },
+    const user = await createTestUser({
+      emailPrefix: `unit-pagination-${suffix}`,
+      firstName: "Pagination",
+      lastName: "Owner",
+      role: "HOST",
     });
-    const country = await prisma.country.create({
-      data: { name: `Unit Pagination Country ${suffix}`, code: `UPC${suffix}` },
-    });
-    const city = await prisma.city.create({
-      data: { name: `Unit Pagination City ${suffix}`, countryId: country.id },
-    });
-    const currency = await prisma.currency.create({
-      data: { code: `UG${suffix}`, symbol: "$" },
-    });
-    const category = await prisma.unitCategory.create({
-      data: { name: `Unit Pagination Category ${suffix}` },
-    });
+    const country = await createTestCountry(`Unit-Pagination-${suffix}`);
+    const city = await createTestCity(
+      `Unit Pagination City ${suffix}`,
+      country.id,
+    );
+    const currency = await createTestCurrency(`UG${suffix}`);
+    const category = await createTestCategory(
+      `Unit Pagination Category ${suffix}`,
+    );
     const units = await prisma.unit.createManyAndReturn({
       data: [100, 150, 200].map((pricePerNight) => ({
         title: `Pagination Unit ${pricePerNight}`,
@@ -229,14 +215,15 @@ describe("units integration", function () {
         units.map(({ id }) => id),
       );
     } finally {
-      await prisma.unit.deleteMany({
-        where: { id: { in: units.map(({ id }) => id) } },
+      await cleanupUnitFixture({
+        unitId: units[0].id,
+        additionalUnitIds: units.slice(1).map(({ id }) => id),
+        cityId: city.id,
+        countryId: country.id,
+        currencyId: currency.id,
+        categoryId: category.id,
+        userIds: [user.id],
       });
-      await prisma.city.delete({ where: { id: city.id } });
-      await prisma.country.delete({ where: { id: country.id } });
-      await prisma.currency.delete({ where: { id: currency.id } });
-      await prisma.unitCategory.delete({ where: { id: category.id } });
-      await prisma.user.delete({ where: { id: user.id } });
     }
   });
 });
