@@ -14,11 +14,18 @@ import {
   unitFavoriteGetRoutes,
   unitFavoriteRoutes,
 } from "./modules/unit-favorites/unit-favorites.routes";
+import { swaggerDocument, swaggerUi } from "./config/swagger";
 
 const app = express();
 
 app.use(express.json());
 app.use(morgan("dev"));
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+app.get("/test", (req, res) => {
+  res.send("TEST WORKS");
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/countries", countriesRouter);
@@ -33,7 +40,7 @@ app.use("/api/units/:unitId/favorite", unitFavoriteRoutes);
 app.use("/api/favorites", unitFavoriteGetRoutes);
 
 app.get("/", (req, res) => {
-  res.send("Server is running");
+  res.send("Server is running new version");
 });
 
 app.use(errorHandler);

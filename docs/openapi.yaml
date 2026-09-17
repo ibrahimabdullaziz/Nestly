@@ -1,0 +1,1135 @@
+openapi: 3.0.3
+info:
+  title: Roovia API
+  description: OpenAPI specification for the Roovia rental marketplace backend.
+  version: 1.0.0
+  contact:
+    name: Roovia Backend Team
+  license:
+    name: Apache 2.0
+
+servers:
+  - url: http://localhost:2005
+    description: Local development server
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Auth
+  - name: Catalog
+  - name: Units
+  - name: Bookings
+  - name: Reviews
+  - name: Favorites
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    BadRequest:
+      description: Invalid request payload or parameters.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Authentication required or invalid token.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Forbidden:
+      description: Action not allowed for the current role or ownership.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Conflict:
+      description: Resource conflict or duplicate.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    InternalServerError:
+      description: Unexpected server error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - status
+        - message
+      properties:
+        status:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: Invalid credentials
+
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - firstName
+        - lastName
+        - role
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 7d08f7c4-9d6b-4e12-bfdf-0f8e0b6f0ee8
+        email:
+          type: string
+          format: email
+          example: guest@example.com
+        firstName:
+          type: string
+          example: Jane
+        lastName:
+          type: string
+          example: Doe
+        role:
+          type: string
+          enum: [GUEST, HOST, ADMIN]
+          example: GUEST
+        isVerified:
+          type: boolean
+          example: true
+
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - firstName
+        - lastName
+      properties:
+        email:
+          type: string
+          format: email
+          example: guest@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: StrongPass123
+        firstName:
+          type: string
+          example: Jane
+        lastName:
+          type: string
+          example: Doe
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: guest@example.com
+        password:
+          type: string
+          format: password
+          example: StrongPass123
+
+    RefreshRequest:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          description: Refresh token returned from login or register.
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    VerifyEmailRequest:
+      type: object
+      required:
+        - email
+        - code
+      properties:
+        email:
+          type: string
+          format: email
+          example: guest@example.com
+        code:
+          type: string
+          minLength: 6
+          maxLength: 6
+          example: "123456"
+
+    ForgotPasswordRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          example: guest@example.com
+
+    ResetPasswordRequest:
+      type: object
+      required:
+        - email
+        - code
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: guest@example.com
+        code:
+          type: string
+          minLength: 6
+          maxLength: 6
+          example: "123456"
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: NewStrongPass123
+
+    AuthTokens:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+        - user
+      properties:
+        accessToken:
+          type: string
+          example: eyJhbGciOi...
+        refreshToken:
+          type: string
+          example: eyJhbGciOi...
+        user:
+          $ref: "#/components/schemas/User"
+
+    Country:
+      type: object
+      required:
+        - id
+        - name
+        - code
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Tunisia
+        code:
+          type: string
+          example: TN
+
+    City:
+      type: object
+      required:
+        - id
+        - name
+        - countryId
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Tunis
+        countryId:
+          type: string
+          format: uuid
+
+    Currency:
+      type: object
+      required:
+        - id
+        - code
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+          example: TND
+        name:
+          type: string
+          example: Tunisian Dinar
+
+    Category:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Apartment
+
+    Unit:
+      type: object
+      required:
+        - id
+        - title
+        - description
+        - pricePerNight
+        - maxGuests
+        - cityId
+        - categoryId
+        - currencyId
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: Cozy apartment in Tunis
+        description:
+          type: string
+          example: Bright apartment near the old medina.
+        pricePerNight:
+          type: number
+          format: float
+          example: 120
+        maxGuests:
+          type: integer
+          example: 4
+        cityId:
+          type: string
+          format: uuid
+        categoryId:
+          type: string
+          format: uuid
+        currencyId:
+          type: string
+          format: uuid
+        isActive:
+          type: boolean
+          example: true
+        ownerId:
+          type: string
+          format: uuid
+
+    Booking:
+      type: object
+      required:
+        - id
+        - unitId
+        - guestId
+        - checkIn
+        - checkOut
+        - totalPrice
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        unitId:
+          type: string
+          format: uuid
+        guestId:
+          type: string
+          format: uuid
+        checkIn:
+          type: string
+          format: date
+        checkOut:
+          type: string
+          format: date
+        totalPrice:
+          type: number
+          format: float
+          example: 480
+        status:
+          type: string
+          enum: [PENDING, CONFIRMED, REJECTED, CANCELLED, COMPLETED]
+          example: PENDING
+
+    Review:
+      type: object
+      required:
+        - id
+        - unitId
+        - guestId
+        - rating
+      properties:
+        id:
+          type: string
+          format: uuid
+        unitId:
+          type: string
+          format: uuid
+        guestId:
+          type: string
+          format: uuid
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 5
+        comment:
+          type: string
+          example: Great stay and very clean apartment.
+
+    Favorite:
+      type: object
+      required:
+        - userId
+        - unitId
+      properties:
+        userId:
+          type: string
+          format: uuid
+        unitId:
+          type: string
+          format: uuid
+
+    ListResponse:
+      type: object
+      required:
+        - status
+        - message
+        - data
+      properties:
+        status:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Success
+        data:
+          type: array
+          items:
+            type: object
+
+paths:
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      description: Create a guest, host, or admin account.
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, message, data]
+                properties:
+                  status:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: User created successfully
+                  data:
+                    $ref: "#/components/schemas/AuthTokens"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login a user
+      description: Authenticate a user and return access and refresh tokens.
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, message, data]
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: User logged successfully
+                  data:
+                    $ref: "#/components/schemas/AuthTokens"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      description: Exchange a valid refresh token for a new access token.
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshRequest"
+      responses:
+        "200":
+          description: Token refreshed successfully
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current authenticated user
+      description: Returns the currently authenticated user profile.
+      operationId: getCurrentUser
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: User retrieved successfully
+                  data:
+                    $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/auth/verify-email:
+    post:
+      tags: [Auth]
+      summary: Verify user email
+      description: Verify a newly registered user's email using the OTP code.
+      operationId: verifyEmail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyEmailRequest"
+      responses:
+        "200":
+          description: Email verified successfully
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Request password reset code
+      description: Send a reset code to the user email.
+      operationId: forgotPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+      responses:
+        "200":
+          description: Password reset code sent
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Reset password
+      description: Reset the user's password with the verification code.
+      operationId: resetPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+      responses:
+        "200":
+          description: Password updated successfully
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/countries:
+    get:
+      tags: [Catalog]
+      summary: List countries
+      operationId: getCountries
+      responses:
+        "200":
+          description: A list of countries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Countries fetched successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Country"
+    post:
+      tags: [Catalog]
+      summary: Create country
+      operationId: createCountry
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, code]
+              properties:
+                name:
+                  type: string
+                  example: Tunisia
+                code:
+                  type: string
+                  example: TN
+      responses:
+        "201":
+          description: Country created
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /api/cities:
+    get:
+      tags: [Catalog]
+      summary: List cities
+      operationId: getCities
+      responses:
+        "200":
+          description: Success
+    post:
+      tags: [Catalog]
+      summary: Create city
+      operationId: createCity
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, countryId]
+              properties:
+                name:
+                  type: string
+                  example: Tunis
+                countryId:
+                  type: string
+                  format: uuid
+      responses:
+        "201":
+          description: City created
+
+  /api/currencies:
+    get:
+      tags: [Catalog]
+      summary: List currencies
+      operationId: getCurrencies
+      responses:
+        "200":
+          description: Success
+
+  /api/unit-categories:
+    get:
+      tags: [Catalog]
+      summary: List categories
+      operationId: getCategories
+      responses:
+        "200":
+          description: Success
+    post:
+      tags: [Catalog]
+      summary: Create category
+      operationId: createCategory
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Category"
+      responses:
+        "201":
+          description: Category created
+
+  /api/units:
+    get:
+      tags: [Units]
+      summary: List units
+      description: List publicly available units with optional query filters.
+      operationId: listUnits
+      parameters:
+        - in: query
+          name: cityId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: categoryId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: minPrice
+          schema:
+            type: number
+            minimum: 0
+        - in: query
+          name: maxPrice
+          schema:
+            type: number
+            minimum: 0
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+      responses:
+        "200":
+          description: Units fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: units listed successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Unit"
+    post:
+      tags: [Units]
+      summary: Create a unit
+      operationId: createUnit
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Unit"
+      responses:
+        "201":
+          description: Unit created successfully
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/units/mine:
+    get:
+      tags: [Units]
+      summary: List my units
+      operationId: listMyUnits
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Units retrieved successfully
+
+  /api/units/{id}:
+    get:
+      tags: [Units]
+      summary: Get unit by id
+      operationId: getUnitById
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Unit fetched successfully
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      tags: [Units]
+      summary: Update unit
+      operationId: updateUnit
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Unit"
+      responses:
+        "200":
+          description: Unit updated successfully
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    delete:
+      tags: [Units]
+      summary: Soft delete a unit
+      operationId: softDeleteUnit
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Unit deleted successfully
+
+  /api/units/{id}/activate:
+    patch:
+      tags: [Units]
+      summary: Activate a unit
+      operationId: activateUnit
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Unit activated
+
+  /api/units/{id}/deactivate:
+    patch:
+      tags: [Units]
+      summary: Deactivate a unit
+      operationId: deactivateUnit
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Unit deactivated
+
+  /api/bookings:
+    post:
+      tags: [Bookings]
+      summary: Create a booking
+      operationId: createBooking
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [unitId, checkIn, checkOut]
+              properties:
+                unitId:
+                  type: string
+                  format: uuid
+                checkIn:
+                  type: string
+                  format: date
+                checkOut:
+                  type: string
+                  format: date
+      responses:
+        "201":
+          description: Booking created successfully
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/bookings/{id}:
+    patch:
+      tags: [Bookings]
+      summary: Update booking
+      operationId: updateBooking
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [checkIn, checkOut]
+              properties:
+                checkIn:
+                  type: string
+                  format: date
+                checkOut:
+                  type: string
+                  format: date
+      responses:
+        "200":
+          description: Booking updated successfully
+    delete:
+      tags: [Bookings]
+      summary: Cancel booking
+      operationId: cancelBooking
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Booking canceled successfully
+
+  /api/bookings/{id}/confirm:
+    patch:
+      tags: [Bookings]
+      summary: Confirm a booking
+      operationId: confirmBooking
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Booking confirmed successfully
+
+  /api/bookings/{id}/reject:
+    patch:
+      tags: [Bookings]
+      summary: Reject a booking
+      operationId: rejectBooking
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Booking rejected successfully
+
+  /api/bookings/mine:
+    get:
+      tags: [Bookings]
+      summary: Get my bookings as guest
+      operationId: getGuestBookings
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Guest bookings retrieved successfully
+
+  /api/bookings/host:
+    get:
+      tags: [Bookings]
+      summary: Get bookings for my units as host
+      operationId: getHostBookings
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Host bookings retrieved successfully
+
+  /api/units/{unitId}/reviews:
+    get:
+      tags: [Reviews]
+      summary: Get unit reviews
+      operationId: getUnitReviews
+      parameters:
+        - in: path
+          name: unitId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Reviews returned successfully
+    post:
+      tags: [Reviews]
+      summary: Create unit review
+      operationId: createReview
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: unitId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                comment:
+                  type: string
+      responses:
+        "201":
+          description: Review created successfully
+
+  /api/units/{unitId}/favorite:
+    post:
+      tags: [Favorites]
+      summary: Add unit to favorites
+      operationId: addFavorite
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: unitId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "201":
+          description: Favorite added
+    delete:
+      tags: [Favorites]
+      summary: Remove unit from favorites
+      operationId: removeFavorite
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: unitId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Favorite removed
+
+  /api/favorites:
+    get:
+      tags: [Favorites]
+      summary: List favorite units for the current user
+      operationId: listFavorites
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Favorites retrieved successfully

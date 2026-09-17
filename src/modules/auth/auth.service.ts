@@ -25,7 +25,7 @@ export async function registerService(data: RegisterDto) {
 
   const html = `
  <div style="font-family: sans-serif; max-width: 400px; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
-  <h2 style="color: #333;">Nestly</h2>
+  <h2 style="color: #333;">Roovia</h2>
   <p style="color: #555;">Your email verification code is:</p>
   <h1 style="color: #4F46E5; letter-spacing: 5px;">${otp}</h1>
   <p style="color: #999; font-size: 12px;">This code expires in 10 minutes.</p>
@@ -111,7 +111,7 @@ export async function forgotPasswordService(email: string) {
 
   const html = `
  <div style="font-family: sans-serif; max-width: 400px; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
-  <h2 style="color: #333;">Nestly</h2>
+  <h2 style="color: #333;">Roovia</h2>
   <p style="color: #555;">Your email verification code is:</p>
   <h1 style="color: #4F46E5; letter-spacing: 5px;">${otpCode}</h1>
   <p style="color: #999; font-size: 12px;">This code expires in 10 minutes.</p>
