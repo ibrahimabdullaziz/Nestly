@@ -1,14 +1,14 @@
-﻿# Roovia
+﻿# Shelter
 
 A hand-built learning project for a short-term rental / accommodation booking backend.
 
 This project was created from scratch with Express, TypeScript, Prisma, and PostgreSQL to practice backend architecture, authentication, validation, file uploads, database modeling, and API design.
 
-> The project name is Roovia, but this is not a NestJS app. It is a custom Express backend built manually as a learning project.
+> The project name is Shelter, but this is not a NestJS app. It is a custom Express backend built manually as a learning project.
 
 ## Overview
 
-Roovia is a backend API for a rental marketplace where users can:
+Shelter is a backend API for a rental marketplace where users can:
 
 - sign up, log in, and manage authentication
 - browse countries, cities, currencies, and property categories
@@ -131,7 +131,7 @@ Create a `.env` file in the `backend` folder with values like this:
 
 ```env
 PORT=3000
-DATABASE_URL="postgresql://username:password@localhost:5432/roovia"
+DATABASE_URL="postgresql://username:password@localhost:5432/shelter"
 JWT_ACCESS_SECRET="your-access-secret"
 JWT_REFRESH_SECRET="your-refresh-secret"
 SYSTEM_ADMIN_EMAIL="admin@example.com"

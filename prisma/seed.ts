@@ -95,7 +95,7 @@ async function createUsers() {
     let email: string;
     do {
       email = faker.internet
-        .email({ provider: `seed-${role}.roovia.local` })
+        .email({ provider: `seed-${role}.shelter.local` })
         .toLowerCase();
     } while (
       usedEmails.has(email) ||
@@ -289,7 +289,7 @@ async function ensureAdmin() {
   return {
     admin: await prisma.user.create({
       data: {
-        email: "seed-admin@roovia.local",
+        email: "seed-admin@shelter.local",
         password: await bcrypt.hash(seedPassword, 10),
         firstName: "Seed",
         lastName: "Admin",

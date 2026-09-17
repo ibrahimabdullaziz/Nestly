@@ -9,7 +9,7 @@ function uploadBuffer(buffer: Buffer) {
       const stream =
         unitPhotoServiceDependencies.cloudinary.uploader.upload_stream(
           {
-            folder: "roovia/units",
+            folder: "shelter/units",
           },
           (
             error: UploadApiErrorResponse | undefined,

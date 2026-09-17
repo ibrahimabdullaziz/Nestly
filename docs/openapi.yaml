@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
-  title: Roovia API
-  description: OpenAPI specification for the Roovia rental marketplace backend.
+  title: Shelter API
+  description: OpenAPI specification for the Shelter rental marketplace backend.
   version: 1.0.0
   contact:
     name: Ibrahim Abdullaziz
@@ -13,9 +13,6 @@ info:
 servers:
   - url: http://localhost:2005
     description: Local development server
-
-security:
-  - bearerAuth: []
 
 tags:
   - name: Auth
@@ -74,12 +71,12 @@ components:
     Error:
       type: object
       required:
-        - status
+        - success
         - message
       properties:
-        status:
-          type: integer
-          example: 400
+        success:
+          type: boolean
+          example: false
         message:
           type: string
           example: Invalid credentials
@@ -336,6 +333,28 @@ components:
           type: string
           format: uuid
 
+    UnitPhoto:
+      type: object
+      required:
+        - id
+        - url
+        - publicId
+        - unitId
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+          example: https://res.cloudinary.com/demo/image/upload/v123/shelter/units/example.jpg
+        publicId:
+          type: string
+          example: shelter/units/example
+        unitId:
+          type: string
+          format: uuid
+
     Booking:
       type: object
       required:
@@ -433,8 +452,9 @@ paths:
     post:
       tags: [Auth]
       summary: Register a new user
-      description: Create a new Roovia account with email, password, and profile details.
+      description: Create a new Shelter account with email, password, and profile details.
       operationId: registerUser
+      security: []
       requestBody:
         required: true
         content:
@@ -476,6 +496,7 @@ paths:
       summary: Login a user
       description: Authenticate a user and return access and refresh tokens.
       operationId: loginUser
+      security: []
       requestBody:
         required: true
         content:
@@ -515,6 +536,7 @@ paths:
       summary: Refresh access token
       description: Exchange a valid refresh token for a new access token.
       operationId: refreshToken
+      security: []
       requestBody:
         required: true
         content:
@@ -580,6 +602,7 @@ paths:
       summary: Verify user email
       description: Confirm a user email address using the 6-digit OTP code generated during signup.
       operationId: verifyEmail
+      security: []
       requestBody:
         required: true
         content:
@@ -617,6 +640,7 @@ paths:
       summary: Request password reset code
       description: Send a password reset OTP to the user's email.
       operationId: forgotPassword
+      security: []
       requestBody:
         required: true
         content:
@@ -653,6 +677,7 @@ paths:
       summary: Reset password
       description: Reset a user's password using the email and verification code.
       operationId: resetPassword
+      security: []
       requestBody:
         required: true
         content:
@@ -690,6 +715,7 @@ paths:
       tags: [Catalog]
       summary: List countries
       operationId: getCountries
+      security: []
       responses:
         "200":
           description: Countries fetched successfully
@@ -755,6 +781,7 @@ paths:
       tags: [Catalog]
       summary: List cities
       operationId: getCities
+      security: []
       responses:
         "200":
           description: Cities fetched successfully
@@ -807,6 +834,7 @@ paths:
       tags: [Catalog]
       summary: List currencies
       operationId: getCurrencies
+      security: []
       responses:
         "200":
           description: Currencies fetched successfully
@@ -831,6 +859,7 @@ paths:
       tags: [Catalog]
       summary: List categories
       operationId: getCategories
+      security: []
       responses:
         "200":
           description: Categories fetched successfully
@@ -880,6 +909,7 @@ paths:
       summary: List units
       description: List publicly available units with optional query filters.
       operationId: listUnits
+      security: []
       parameters:
         - in: query
           name: cityId
@@ -1006,6 +1036,7 @@ paths:
       tags: [Units]
       summary: Get unit by id
       operationId: getUnitById
+      security: []
       parameters:
         - in: path
           name: id
@@ -1109,6 +1140,91 @@ paths:
       responses:
         "200":
           description: Unit deactivated successfully
+
+  /api/units/{unitId}/photos:
+    post:
+      tags: [Units]
+      summary: Upload a unit photo
+      operationId: uploadUnitPhoto
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: unitId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [photo]
+              properties:
+                photo:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: Photo uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: photo uploaded successfully
+                  data:
+                    $ref: "#/components/schemas/UnitPhoto"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/units/photos/{photoId}:
+    delete:
+      tags: [Units]
+      summary: Delete a unit photo
+      operationId: deleteUnitPhoto
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: photoId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Photo deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: photo deleted successfully
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /api/bookings:
     post:
@@ -1375,6 +1491,7 @@ paths:
       tags: [Reviews]
       summary: Get unit reviews
       operationId: getUnitReviews
+      security: []
       parameters:
         - in: path
           name: unitId
