@@ -4,9 +4,11 @@ info:
   description: OpenAPI specification for the Roovia rental marketplace backend.
   version: 1.0.0
   contact:
-    name: Roovia Backend Team
+    name: Ibrahim Abdullaziz
+    email: ibrahimabdullaziz55@gmail.com
   license:
     name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
 
 servers:
   - url: http://localhost:2005
@@ -431,7 +433,7 @@ paths:
     post:
       tags: [Auth]
       summary: Register a new user
-      description: Create a guest, host, or admin account.
+      description: Create a new Roovia account with email, password, and profile details.
       operationId: registerUser
       requestBody:
         required: true
@@ -439,6 +441,11 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/RegisterRequest"
+            example:
+              email: guest@example.com
+              password: StrongPass123
+              firstName: Jane
+              lastName: Doe
       responses:
         "201":
           description: User created successfully
@@ -475,6 +482,9 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/LoginRequest"
+            example:
+              email: guest@example.com
+              password: StrongPass123
       responses:
         "200":
           description: Login successful
@@ -511,19 +521,36 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/RefreshRequest"
+            example:
+              token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
       responses:
         "200":
           description: Token refreshed successfully
-        "403":
-          $ref: "#/components/responses/Forbidden"
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, message, accessToken]
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Token refreshed successfully
+                  accessToken:
+                    type: string
+                    example: eyJhbGciOi...
         "400":
           $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
   /api/auth/me:
     get:
       tags: [Auth]
       summary: Get current authenticated user
-      description: Returns the currently authenticated user profile.
+      description: Returns the currently authenticated user profile from the JWT payload.
       operationId: getCurrentUser
       security:
         - bearerAuth: []
@@ -534,6 +561,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [status, message, data]
                 properties:
                   status:
                     type: integer
@@ -550,7 +578,7 @@ paths:
     post:
       tags: [Auth]
       summary: Verify user email
-      description: Verify a newly registered user's email using the OTP code.
+      description: Confirm a user email address using the 6-digit OTP code generated during signup.
       operationId: verifyEmail
       requestBody:
         required: true
@@ -558,9 +586,26 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/VerifyEmailRequest"
+            example:
+              email: guest@example.com
+              code: "123456"
       responses:
         "200":
           description: Email verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, message, data]
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Email verified successfully
+                  data:
+                    $ref: "#/components/schemas/User"
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -570,7 +615,7 @@ paths:
     post:
       tags: [Auth]
       summary: Request password reset code
-      description: Send a reset code to the user email.
+      description: Send a password reset OTP to the user's email.
       operationId: forgotPassword
       requestBody:
         required: true
@@ -578,9 +623,27 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/ForgotPasswordRequest"
+            example:
+              email: guest@example.com
       responses:
         "200":
-          description: Password reset code sent
+          description: Password reset code sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, message, data]
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Password changed successfully
+                  data:
+                    type: object
+                    nullable: true
+                    example: null
         "404":
           $ref: "#/components/responses/NotFound"
 
@@ -588,7 +651,7 @@ paths:
     post:
       tags: [Auth]
       summary: Reset password
-      description: Reset the user's password with the verification code.
+      description: Reset a user's password using the email and verification code.
       operationId: resetPassword
       requestBody:
         required: true
@@ -596,9 +659,27 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/ResetPasswordRequest"
+            example:
+              email: guest@example.com
+              code: "123456"
+              password: NewStrongPass123
       responses:
         "200":
           description: Password updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, message, data]
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Password changed successfully
+                  data:
+                    $ref: "#/components/schemas/User"
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -611,18 +692,19 @@ paths:
       operationId: getCountries
       responses:
         "200":
-          description: A list of countries
+          description: Countries fetched successfully
           content:
             application/json:
               schema:
                 type: object
+                required: [status, message, data]
                 properties:
                   status:
-                    type: integer
-                    example: 200
+                    type: string
+                    example: "200"
                   message:
                     type: string
-                    example: Countries fetched successfully
+                    example: countries data fetched successfully
                   data:
                     type: array
                     items:
@@ -648,8 +730,21 @@ paths:
                   type: string
                   example: TN
       responses:
-        "201":
-          description: Country created
+        "200":
+          description: Country created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "200"
+                  message:
+                    type: string
+                    example: country created successfully
+                  data:
+                    $ref: "#/components/schemas/Country"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -662,7 +757,22 @@ paths:
       operationId: getCities
       responses:
         "200":
-          description: Success
+          description: Cities fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "200"
+                  message:
+                    type: string
+                    example: cities data fetched successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/City"
     post:
       tags: [Catalog]
       summary: Create city
@@ -683,9 +793,14 @@ paths:
                 countryId:
                   type: string
                   format: uuid
+                  example: 2ebf420c-47e6-4a8f-87d2-9072f2ffdd1c
       responses:
-        "201":
-          description: City created
+        "200":
+          description: City created successfully
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
   /api/currencies:
     get:
@@ -694,7 +809,22 @@ paths:
       operationId: getCurrencies
       responses:
         "200":
-          description: Success
+          description: Currencies fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "200"
+                  message:
+                    type: string
+                    example: currencies data fetched successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Currency"
 
   /api/unit-categories:
     get:
@@ -703,7 +833,22 @@ paths:
       operationId: getCategories
       responses:
         "200":
-          description: Success
+          description: Categories fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "200"
+                  message:
+                    type: string
+                    example: categories data fetched successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Category"
     post:
       tags: [Catalog]
       summary: Create category
@@ -715,10 +860,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Category"
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  example: Apartment
       responses:
-        "201":
-          description: Category created
+        "200":
+          description: Category created successfully
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
   /api/units:
     get:
@@ -762,7 +916,7 @@ paths:
             default: 20
       responses:
         "200":
-          description: Units fetched successfully
+          description: Units listed successfully
           content:
             application/json:
               schema:
@@ -778,6 +932,8 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/Unit"
+        "400":
+          $ref: "#/components/responses/BadRequest"
     post:
       tags: [Units]
       summary: Create a unit
@@ -790,9 +946,30 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/Unit"
+            example:
+              title: Cozy apartment in Tunis
+              description: Bright apartment near the old medina.
+              pricePerNight: 120
+              maxGuests: 4
+              cityId: 2ebf420c-47e6-4a8f-87d2-9072f2ffdd1c
+              currencyId: 8243b73b-1c7f-4f5e-bd59-0d3ff9d533a6
+              categoryId: d3e78fbd-b3ea-468d-a337-9b3d5f7d91e2
       responses:
         "201":
           description: Unit created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: unit created successfully
+                  data:
+                    $ref: "#/components/schemas/Unit"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -808,6 +985,21 @@ paths:
       responses:
         "200":
           description: Units retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: units listed successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Unit"
 
   /api/units/{id}:
     get:
@@ -824,6 +1016,19 @@ paths:
       responses:
         "200":
           description: Unit fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: units fetched successfully
+                  data:
+                    $ref: "#/components/schemas/Unit"
         "404":
           $ref: "#/components/responses/NotFound"
     patch:
@@ -885,7 +1090,7 @@ paths:
             format: uuid
       responses:
         "200":
-          description: Unit activated
+          description: Unit activated successfully
 
   /api/units/{id}/deactivate:
     patch:
@@ -903,7 +1108,7 @@ paths:
             format: uuid
       responses:
         "200":
-          description: Unit deactivated
+          description: Unit deactivated successfully
 
   /api/bookings:
     post:
@@ -923,15 +1128,31 @@ paths:
                 unitId:
                   type: string
                   format: uuid
+                  example: 911f7b13-5d8e-4fca-bf16-8d39765d2f1d
                 checkIn:
                   type: string
                   format: date
+                  example: "2026-10-10"
                 checkOut:
                   type: string
                   format: date
+                  example: "2026-10-15"
       responses:
         "201":
           description: Booking created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: booking created successfully
+                  data:
+                    $ref: "#/components/schemas/Booking"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -940,7 +1161,7 @@ paths:
   /api/bookings/{id}:
     patch:
       tags: [Bookings]
-      summary: Update booking
+      summary: Update booking dates
       operationId: updateBooking
       security:
         - bearerAuth: []
@@ -962,12 +1183,31 @@ paths:
                 checkIn:
                   type: string
                   format: date
+                  example: "2026-10-11"
                 checkOut:
                   type: string
                   format: date
+                  example: "2026-10-16"
       responses:
         "200":
           description: Booking updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: booking updated successfully
+                  data:
+                    $ref: "#/components/schemas/Booking"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
     delete:
       tags: [Bookings]
       summary: Cancel booking
@@ -984,11 +1224,28 @@ paths:
       responses:
         "200":
           description: Booking canceled successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: booking canceled successfully
+                  data:
+                    $ref: "#/components/schemas/Booking"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
   /api/bookings/{id}/confirm:
     patch:
       tags: [Bookings]
-      summary: Confirm a booking
+      summary: Confirm a booking as host
       operationId: confirmBooking
       security:
         - bearerAuth: []
@@ -1002,11 +1259,28 @@ paths:
       responses:
         "200":
           description: Booking confirmed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: booking confirmed successfully
+                  data:
+                    $ref: "#/components/schemas/Booking"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
   /api/bookings/{id}/reject:
     patch:
       tags: [Bookings]
-      summary: Reject a booking
+      summary: Reject a booking as host
       operationId: rejectBooking
       security:
         - bearerAuth: []
@@ -1020,6 +1294,23 @@ paths:
       responses:
         "200":
           description: Booking rejected successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: booking rejected successfully
+                  data:
+                    $ref: "#/components/schemas/Booking"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
   /api/bookings/mine:
     get:
@@ -1031,6 +1322,23 @@ paths:
       responses:
         "200":
           description: Guest bookings retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: guest bookings retrieved successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Booking"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
   /api/bookings/host:
     get:
@@ -1042,6 +1350,25 @@ paths:
       responses:
         "200":
           description: Host bookings retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: host bookings retrieved successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Booking"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
   /api/units/{unitId}/reviews:
     get:
@@ -1058,6 +1385,36 @@ paths:
       responses:
         "200":
           description: Reviews returned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: reviews fetched successfully
+                  data:
+                    type: object
+                    properties:
+                      reviews:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Review"
+                      avgRating:
+                        type: object
+                        properties:
+                          _avg:
+                            type: object
+                            properties:
+                              rating:
+                                type: number
+                                nullable: true
+                                example: 4.8
+        "404":
+          $ref: "#/components/responses/NotFound"
     post:
       tags: [Reviews]
       summary: Create unit review
@@ -1083,11 +1440,32 @@ paths:
                   type: integer
                   minimum: 1
                   maximum: 5
+                  example: 5
                 comment:
                   type: string
+                  example: Great stay and very clean apartment.
       responses:
-        "201":
+        "200":
           description: Review created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: review created successfully
+                  data:
+                    $ref: "#/components/schemas/Review"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
   /api/units/{unitId}/favorite:
     post:
@@ -1104,8 +1482,23 @@ paths:
             type: string
             format: uuid
       responses:
-        "201":
-          description: Favorite added
+        "200":
+          description: Favorite added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: favorite created successfully
+                  data:
+                    $ref: "#/components/schemas/Favorite"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
     delete:
       tags: [Favorites]
       summary: Remove unit from favorites
@@ -1121,7 +1514,22 @@ paths:
             format: uuid
       responses:
         "200":
-          description: Favorite removed
+          description: Favorite removed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: favorite removed successfully
+                  data:
+                    $ref: "#/components/schemas/Favorite"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
   /api/favorites:
     get:
@@ -1133,3 +1541,32 @@ paths:
       responses:
         "200":
           description: Favorites retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: favorite fetched successfully
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        userId:
+                          type: string
+                          format: uuid
+                        unitId:
+                          type: string
+                          format: uuid
+                        unit:
+                          $ref: "#/components/schemas/Unit"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
