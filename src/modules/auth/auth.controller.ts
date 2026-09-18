@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import asyncHandler from "../../common/utils/asyncHandler";
 import { authServices } from "./auth.service";
+import { usersRegisteredTotal } from "../../config/metrics";
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const { email, password, firstName, lastName } = req.body;
@@ -13,6 +14,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
   });
 
   req.log?.info({ userId: data.user.id }, "User registered");
+  usersRegisteredTotal.inc();
 
   return res
     .status(201)

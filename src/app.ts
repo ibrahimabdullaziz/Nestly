@@ -1,6 +1,7 @@
 import express = require("express");
 import pinoHttp from "pino-http";
 import logger from "./config/logger";
+import metrics from "./config/metrics";
 import authRoutes from "./modules/auth/auth.routes";
 import errorHandler from "./common/middleware/errorHandler";
 import countriesRouter from "./modules/countries/countries.routes";
@@ -16,6 +17,7 @@ import {
   unitFavoriteRoutes,
 } from "./modules/unit-favorites/unit-favorites.routes";
 import { swaggerDocument, swaggerUi } from "./config/swagger";
+import metricsMiddleware from "./common/middleware/metrics";
 
 const app = express();
 
@@ -28,6 +30,13 @@ app.use(
     },
   }),
 );
+
+app.use(metricsMiddleware);
+
+app.get("/metrics", async (req, res) => {
+  res.set("Content-Type", metrics.register.contentType);
+  res.end(await metrics.register.metrics());
+});
 
 app.use(express.json());
 
