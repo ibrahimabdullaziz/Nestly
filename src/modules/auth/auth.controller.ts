@@ -12,6 +12,8 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     lastName,
   });
 
+  req.log?.info({ userId: data.user.id }, "User registered");
+
   return res
     .status(201)
     .json({ status: 201, message: "User created successfully", data });
@@ -21,6 +23,11 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   const data = await authServices.loginService(email, password);
+
+  req.log?.info(
+    { userId: data.user.id, userRole: data.user.role },
+    "User logged in",
+  );
 
   return res
     .status(200)

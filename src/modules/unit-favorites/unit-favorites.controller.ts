@@ -21,6 +21,11 @@ export const addFavorite = asyncHandler(
     const unitId = extractUnitId(req);
     const favorite = await favoriteServices.addFavoriteService(guestId, unitId);
 
+    req.log?.info(
+      { userId: guestId, unitId },
+      "Unit favorited",
+    );
+
     res.status(200).json({
       status: 201,
       message: "favorite created successfully",
@@ -36,6 +41,11 @@ export const removeFavorite = asyncHandler(
     const favorite = await favoriteServices.removeFavoriteService(
       guestId,
       unitId,
+    );
+
+    req.log?.info(
+      { userId: guestId, unitId },
+      "Unit unfavorited",
     );
 
     res.status(200).json({

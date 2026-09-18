@@ -24,6 +24,7 @@ interface AppConfig {
   cloudinaryApiSecret: string;
   mailUser: string;
   mailPass: string;
+  nodeEnv: string;
 }
 
 const config: AppConfig = {
@@ -38,6 +39,7 @@ const config: AppConfig = {
   cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET as string,
   mailUser: process.env.MAIL_USER as string,
   mailPass: process.env.MAIL_PASS as string,
+  nodeEnv: process.env.NODE_ENV as string,
 };
 
 export default config;

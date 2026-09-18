@@ -28,6 +28,8 @@ export const createCurrency = asyncHandler(
       throw new ApiError(500, "Error occurred while creation process.");
     }
 
+    req.log?.info({ currencyId: currency.id }, "Currency created");
+
     res.json({
       status: "200",
       message: "currency created successfully",

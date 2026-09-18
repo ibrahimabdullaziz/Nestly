@@ -1,5 +1,6 @@
 import express = require("express");
-import morgan = require("morgan");
+import pinoHttp from "pino-http";
+import logger from "./config/logger";
 import authRoutes from "./modules/auth/auth.routes";
 import errorHandler from "./common/middleware/errorHandler";
 import countriesRouter from "./modules/countries/countries.routes";
@@ -18,13 +19,32 @@ import { swaggerDocument, swaggerUi } from "./config/swagger";
 
 const app = express();
 
+app.use(
+  pinoHttp({
+    logger,
+
+    genReqId: (req) => {
+      return req.headers["x-request-id"] || crypto.randomUUID();
+    },
+  }),
+);
+
 app.use(express.json());
-app.use(morgan("dev"));
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.get("/test", (req, res) => {
-  res.send("TEST WORKS");
+  console.log("CONSOLE TEST");
+
+  req.log.info("PINO TEST");
+
+  res.json({
+    message: "test",
+  });
+});
+
+app.get("/test-error", (req, res) => {
+  throw new Error("Something went wrong");
 });
 
 app.use("/api/auth", authRoutes);

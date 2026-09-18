@@ -21,6 +21,14 @@ function errorHandler(
         : err.message;
   }
 
+  const logFields = { err, requestId: req.id, statusCode };
+
+  if (statusCode < 500) {
+    req.log.warn(logFields, "Request rejected");
+  } else {
+    req.log.error(logFields, "Request failed");
+  }
+
   return res.status(statusCode).json({ success: false, message });
 }
 export default errorHandler;

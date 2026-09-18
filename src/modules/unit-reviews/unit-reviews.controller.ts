@@ -30,6 +30,11 @@ export const createReview = asyncHandler(
       throw new ApiError(500, "Server Error while creation process");
     }
 
+    req.log?.info(
+      { userId: guestId, unitId, reviewId: review.id },
+      "Review created",
+    );
+
     res.status(200).json({
       status: 200,
       message: "review created successfully",

@@ -28,6 +28,8 @@ export const createCity = asyncHandler(
       throw new ApiError(500, "Error occurred while creation process.");
     }
 
+    req.log?.info({ cityId: city.id }, "City created");
+
     res.json({
       status: "200",
       message: "city created successfully",

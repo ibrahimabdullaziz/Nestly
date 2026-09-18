@@ -28,6 +28,8 @@ export const createCategory = asyncHandler(
       throw new ApiError(500, "Error occurred while creation process.");
     }
 
+    req.log?.info({ categoryId: category.id }, "Category created");
+
     res.json({
       status: "200",
       message: "category created successfully",

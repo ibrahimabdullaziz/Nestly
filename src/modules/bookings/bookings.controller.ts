@@ -31,6 +31,11 @@ export const createBooking = asyncHandler(
       new Date(checkOut),
     );
 
+    req.log?.info(
+      { userId: guestId, unitId, bookingId: booking.id },
+      "Booking created",
+    );
+
     res.status(201).json({
       status: 201,
       message: "booking created successfully",
@@ -55,6 +60,11 @@ export const updateBooking = asyncHandler(
       [new Date(checkIn), new Date(checkOut)],
     );
 
+    req.log?.info(
+      { userId: guestId, unitId: booking.unitId, bookingId: booking.id },
+      "Booking updated",
+    );
+
     res.status(200).json({
       status: 200,
       message: "booking updated successfully",
@@ -71,6 +81,11 @@ export const cancelBooking = asyncHandler(
     const booking = await bookingServices.cancelBookingService(
       bookingId,
       guestId,
+    );
+
+    req.log?.info(
+      { userId: guestId, unitId: booking.unitId, bookingId: booking.id },
+      "Booking canceled",
     );
 
     res.status(200).json({
@@ -91,6 +106,11 @@ export const confirmBooking = asyncHandler(
       hostId,
     );
 
+    req.log?.info(
+      { userId: hostId, unitId: booking.unitId, bookingId: booking.id },
+      "Booking confirmed",
+    );
+
     res.status(200).json({
       status: 200,
       message: "booking confirmed successfully",
@@ -107,6 +127,11 @@ export const rejectBooking = asyncHandler(
     const booking = await bookingServices.rejectBookingService(
       bookingId,
       hostId,
+    );
+
+    req.log?.info(
+      { userId: hostId, unitId: booking.unitId, bookingId: booking.id },
+      "Booking rejected",
     );
 
     res.status(200).json({

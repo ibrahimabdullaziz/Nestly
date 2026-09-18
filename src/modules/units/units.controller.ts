@@ -27,6 +27,11 @@ export const createUnit = asyncHandler(
 
     const unit = await unitServices.createUnitService(req.user.id, req.body);
 
+    req.log?.info(
+      { userId: req.user.id, unitId: unit.id },
+      "Unit created",
+    );
+
     return res.status(201).json({
       status: 201,
       message: "unit created successfully",
@@ -51,6 +56,11 @@ export const updateUnit = asyncHandler(
       unitId,
       req.user.id,
       req.body,
+    );
+
+    req.log?.info(
+      { userId: req.user.id, unitId },
+      "Unit updated",
     );
 
     return res.status(200).json({
@@ -121,6 +131,8 @@ export const activateUnit = asyncHandler(
 
     const unit = await unitServices.activateUnitService(unitId, userId);
 
+    req.log?.info({ userId, unitId }, "Unit activated");
+
     return res.status(200).json({
       status: 200,
       message: "unit updated successfully",
@@ -135,6 +147,8 @@ export const softDeleteUnit = asyncHandler(
 
     const unit = await unitServices.softDeleteUnitService(unitId, userId);
 
+    req.log?.info({ userId, unitId }, "Unit deleted");
+
     return res.status(200).json({
       status: 200,
       message: "unit updated successfully",
@@ -148,6 +162,8 @@ export const deactivateUnit = asyncHandler(
     const { unitId, userId } = typesChecking(req);
 
     const unit = await unitServices.deactivateUnitService(unitId, userId);
+
+    req.log?.info({ userId, unitId }, "Unit deactivated");
 
     return res.status(200).json({
       status: 200,
